@@ -51,7 +51,7 @@ void autonomous() {}
  * following initialize().
  *
  * If the robot is disabled or communications is lost, the
- * operator control task will be stopped. Re-enabling the robot will restart the
+ * operator control task will be stopped. Re-enabling the robot wil l restart the
  * task, not resume it from where it left off.
  */
 void opcontrol() {
