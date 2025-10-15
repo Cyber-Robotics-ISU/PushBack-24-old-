@@ -1,4 +1,23 @@
 #include "main.h"
+<<<<<<< Updated upstream
+=======
+#include "global.hpp"
+
+#include "mecanum_drive.hpp"
+
+// basic
+#include <vector>
+#include <string>
+#include <sstream>
+#include <iomanip>
+#include <cstdio> 
+
+// lvgl vars
+#include "liblvgl/lvgl.h"
+
+#include "ui.hpp" 
+#include "pros/apix.h"
+>>>>>>> Stashed changes
 
 /**
  * Runs initialization code. This occurs as soon as the program is started.
@@ -8,7 +27,13 @@
  */
 void initialize() {
     pros::lcd::initialize(); // initialize brain screen
+<<<<<<< Updated upstream
+=======
+    create_main_screen();
+>>>>>>> Stashed changes
 }
+
+
 
 /**
  * Runs while the robot is in the disabled state of Field Management System or
@@ -39,7 +64,26 @@ void competition_initialize() {}
  * will be stopped. Re-enabling the robot will restart the task, not re-start it
  * from where it left off.
  */
+<<<<<<< Updated upstream
 void autonomous() {}
+=======
+void autonomous() {
+    auton_list[current_auton_selection].func();
+    // Tune PIDs here:
+    /**
+    drive.setDrivePID(5.0, 0.0, 2.0);   // Forward/backward
+    drive.setStrafePID(4.0, 0.0, 2.0);  // Strafing
+    drive.setTurnPID(3.0, 0.0, 1.5);    // Turning
+
+    drive.drive_brake_set(pros::E_MOTOR_BRAKE_HOLD); // hold motors when stopped
+    drive.drive_imu_calibrate(); // reset IMU heading
+    
+    drive.moveStraight(24);   // Drive forward 24 inches
+    drive.strafePIDMove(12);  // Strafe right 12 inches
+    drive.turnPIDAngle(90);       // Turn 90 degrees clockwise
+    */
+}
+>>>>>>> Stashed changes
 
 /**
  * Runs the operator control code. This function will be started in its own task
@@ -55,8 +99,22 @@ void autonomous() {}
  * task, not resume it from where it left off.
  */
 void opcontrol() {
+<<<<<<< Updated upstream
 	
 	while (true) {	
+=======
+	while (true) {	
+        double vx = masterController.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_X);
+        double vy = -masterController.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
+        double omega = masterController.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
+
+        drive.drive(vx, vy, omega);
+
+        if (masterController.get_digital(pros::E_CONTROLLER_DIGITAL_R1)) {
+            FUCKTEST.move(127);
+        }
+
+>>>>>>> Stashed changes
 		pros::delay(20);                               // Run for 20 ms then update
 	}
 } // End of opcontrol 
