@@ -64,6 +64,24 @@ std::vector<pros::Motor*> motorGroupBackRight = { &back_right1, &back_right2 };
 pros::Imu imu(21); 
 pros::Rotation horizontal_encoder(5); // horizontal tracking wheel Rotation sensor
 pros::Rotation vertical_encoder(6); // vertical tracking wheel Rotation sensor
+<<<<<<< Updated upstream
+
+MecanumDrive drive(
+    {&front_left1, &front_left2},
+    {&front_right1, &front_right2},
+    {&back_left1, &back_left2},
+    {&back_right1, &back_right2},
+    &imu,
+    &vertical_encoder,
+    &horizontal_encoder,
+    4.0,   // wheel diameter in inches
+    13.5,  // track width
+    13.0,  // track base
+    3.0    // gear ratio (motor revs per wheel rev)
+);
+
+>>>>>>> Stashed changes
+=======
 
 MecanumDrive drive(
     {&front_left1, &front_left2},

@@ -31,6 +31,9 @@
 
 #include "ui.hpp" 
 
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 /**
  * If defined, some commonly used enums will have preprocessor macros which give

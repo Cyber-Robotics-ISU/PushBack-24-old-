@@ -17,6 +17,9 @@
 
 #include "ui.hpp" 
 #include "pros/apix.h"
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 /**
@@ -28,6 +31,10 @@
 void initialize() {
     pros::lcd::initialize(); // initialize brain screen
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+    create_main_screen();
+>>>>>>> Stashed changes
 =======
     create_main_screen();
 >>>>>>> Stashed changes
@@ -100,9 +107,12 @@ void autonomous() {
  */
 void opcontrol() {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 	
 	while (true) {	
 =======
+=======
+>>>>>>> Stashed changes
 	while (true) {	
         double vx = masterController.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_X);
         double vy = -masterController.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
@@ -114,6 +124,9 @@ void opcontrol() {
             FUCKTEST.move(127);
         }
 
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 		pros::delay(20);                               // Run for 20 ms then update
 	}

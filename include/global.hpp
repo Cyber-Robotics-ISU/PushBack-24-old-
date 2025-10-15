@@ -21,13 +21,26 @@ struct AutonOption {
 extern int current_auton_selection;  // singular
 extern std::vector<AutonOption> auton_list;
 
+// Auton Option struct
+struct AutonOption {
+    const char* name;
+    void (*func)();
+};
+
+// Use a single global variable
+extern int current_auton_selection;  // singular
+extern std::vector<AutonOption> auton_list;
+
 
 // Define global variables and objects here
 extern pros::Controller masterController;
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 // Define VEX Motors
 =======
+=======
+>>>>>>> Stashed changes
 extern pros::Motor FUCKTEST;
 /** Define Motors */
 extern pros::Motor front_left1;
