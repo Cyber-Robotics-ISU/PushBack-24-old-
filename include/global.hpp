@@ -18,7 +18,6 @@ struct AutonOption {
 extern int current_auton_selection;  // singular
 extern std::vector<AutonOption> auton_list;
 
-
 /** Define Controllers  */
 // Defined VEX PROS Main Master Controller
 extern pros::Controller masterController;
