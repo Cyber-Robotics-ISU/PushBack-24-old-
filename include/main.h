@@ -27,6 +27,9 @@
 // defined pid
 #include "pid.hpp"
 
+// define driver profile file
+#include "driver_profile.hpp"
+
 /**
  * If defined, some commonly used enums will have preprocessor macros which give
  * a shorter, more convenient naming pattern. If this isn't desired, simply

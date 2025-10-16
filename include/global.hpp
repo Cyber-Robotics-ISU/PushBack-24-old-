@@ -2,28 +2,33 @@
 #include "api.h"
 #include "mecanum_drive.hpp"
 #include "autons.hpp"  
+#include "driver_profile.hpp"
 #include "pid.hpp"
 
-extern int current_auton_selection; // Current auton selection
 /** Define global variables and objects here */
-extern int autonColor;
-
-// Auton Option struct
-struct AutonOption {
+struct ProfileOption { // profile option struct
     const char* name;
     void (*func)();
 };
+extern int current_profile_selection; // current profile selection
+extern std::vector<ProfileOption> profile_list;
 
-// Use a single global variable
-extern int current_auton_selection;  // singular
+struct AutonOption { // Auton Option struct
+    const char* name;
+    void (*func)();
+};
+extern int autonColor;
+extern int current_auton_selection; // Current auton selection
 extern std::vector<AutonOption> auton_list;
+
+
 
 /** Define Controllers  */
 // Defined VEX PROS Main Master Controller
 extern pros::Controller masterController;
 
 extern pros::Motor FUCKTEST;
-/** Define Motors */
+/** Define Drive Train Motors */
 extern pros::Motor front_left1;
 extern pros::Motor front_left2;
 extern pros::Motor front_right1;

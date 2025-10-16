@@ -11,7 +11,6 @@
 // Actual autonomous implementations
 void auton_left() {
     FUCKTEST.move(20);
-
 }
 
 void auton_right() {

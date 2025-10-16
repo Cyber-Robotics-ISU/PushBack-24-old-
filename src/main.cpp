@@ -1,6 +1,6 @@
 #include "main.h"
 #include "global.hpp"
-
+#include "driver_profile.hpp"
 #include "mecanum_drive.hpp"
 
 // basic
@@ -90,16 +90,7 @@ void autonomous() {
  */
 void opcontrol() {
 	while (true) {	
-        double vx = masterController.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_X);
-        double vy = -masterController.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
-        double omega = masterController.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
-
-        drive.drive(vx, vy, omega);
-
-        if (masterController.get_digital(pros::E_CONTROLLER_DIGITAL_R1)) {
-            FUCKTEST.move(127);
-        }
-
-		pros::delay(20);                               // Run for 20 ms then update
+        profile_list[current_profile_selection].func();
+		pros::delay(20); // Run for 20 ms then update
 	}
 } // End of opcontrol 

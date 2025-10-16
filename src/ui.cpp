@@ -1,14 +1,14 @@
 #include "ui.hpp"
-#include "global.hpp"
-#include <cmath>
-
-#include "autons.hpp"  
-
 #include <vector>
 #include <string>
+#include <cmath>
+
 #include "liblvgl/lvgl.h"
 
-// ---------------- Utility ----------------
+#include "global.hpp"
+#include "autons.hpp"  
+
+// clear screen
 void clear_screen(lv_obj_t* screen) {
     lv_obj_clean(screen);
 }
@@ -45,6 +45,11 @@ void create_main_screen() {
         LV_ALIGN_TOP_LEFT, 20, 20, create_auton_screen);
     lv_obj_set_size(btn_auton, btn_w, btn_h);
 
+    // Profiles (Top Right)
+    lv_obj_t* btn_profiles = create_button(screen, "Profiles",
+    LV_ALIGN_TOP_RIGHT, -20, 20, create_profiles_screen);
+    lv_obj_set_size(btn_profiles, btn_w, btn_h);
+
     // Odometry (Bottom Left)
     lv_obj_t* btn_odom = create_button(screen, "Odometry",
         LV_ALIGN_BOTTOM_LEFT, 20, -20, create_odometry_screen);
@@ -57,7 +62,7 @@ void create_main_screen() {
 }
 
 
-// ---------------- Static Callbacks ----------------
+//  Static Callbacks 
 // Left button callback
 static void left_btn_event_cb(lv_event_t* e) {
     lv_obj_t* label = (lv_obj_t*)lv_event_get_user_data(e);
@@ -80,7 +85,7 @@ static void back_btn_event_cb(lv_event_t* e) {
     create_main_screen();
 }
 
-// ---------------- Auton Selector Screen ----------------
+// Auton Selector Screen 
 void create_auton_screen() {
     lv_obj_t* screen = lv_obj_create(nullptr);
     lv_screen_load(screen);
@@ -88,20 +93,20 @@ void create_auton_screen() {
     lv_obj_set_style_bg_color(screen, lv_color_hex(0x223355), LV_PART_MAIN);
     lv_obj_set_style_bg_opa(screen, LV_OPA_COVER, LV_PART_MAIN);
 
-    // --- Title ---
+    //  Title 
     lv_obj_t* title = lv_label_create(screen);
     lv_label_set_text(title, "Auton Selector");
     lv_obj_set_style_text_font(title, &lv_font_montserrat_30, LV_PART_MAIN);
     lv_obj_set_align(title, LV_ALIGN_TOP_MID);
     lv_obj_set_y(title, 10);
 
-    // --- Current Auton Label ---
+    //  Current Auton Label 
     lv_obj_t* label = lv_label_create(screen);
     lv_label_set_text_fmt(label, "%s", auton_list[current_auton_selection].name);
     lv_obj_set_style_text_font(label, &lv_font_montserrat_30, LV_PART_MAIN);
     lv_obj_set_align(label, LV_ALIGN_CENTER);
 
-    // --- Left/Right Tap Areas ---
+    //  Left/Right Tap Areas 
     lv_obj_t* left = lv_button_create(screen);
     lv_obj_set_size(left, 100, 200);
     lv_obj_set_align(left, LV_ALIGN_LEFT_MID);
@@ -114,7 +119,7 @@ void create_auton_screen() {
     lv_obj_set_style_bg_opa(right, LV_OPA_TRANSP, LV_PART_MAIN);
     lv_obj_add_event_cb(right, right_btn_event_cb, LV_EVENT_CLICKED, label);
 
-    // --- Back Button ---
+    //  Back Button 
     lv_obj_t* back = lv_button_create(screen);
     lv_obj_set_size(back, 100, 50);
     lv_obj_set_align(back, LV_ALIGN_BOTTOM_MID);
@@ -127,7 +132,76 @@ void create_auton_screen() {
     lv_obj_add_event_cb(back, back_btn_event_cb, LV_EVENT_CLICKED, nullptr);
 }
 
-// ---------------- Odometry Screen ----------------
+//  Static Callbacks (Profiles) 
+static void left_profile_event_cb(lv_event_t* e) {
+    lv_obj_t* label = (lv_obj_t*)lv_event_get_user_data(e);
+    current_profile_selection--;
+    if (current_profile_selection < 0)
+        current_profile_selection = profile_list.size() - 1;
+    lv_label_set_text(label, profile_list[current_profile_selection].name);
+}
+
+static void right_profile_event_cb(lv_event_t* e) {
+    lv_obj_t* label = (lv_obj_t*)lv_event_get_user_data(e);
+    current_profile_selection++;
+    if (current_profile_selection >= (int)profile_list.size())
+        current_profile_selection = 0;
+    lv_label_set_text(label, profile_list[current_profile_selection].name);
+}
+
+static void back_profile_event_cb(lv_event_t* e) {
+    create_main_screen();
+}
+
+//  Profiles Screen 
+void create_profiles_screen() {
+    lv_obj_t* screen = lv_obj_create(nullptr);
+    lv_screen_load(screen);
+
+    lv_obj_set_style_bg_color(screen, lv_color_hex(0x334466), LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(screen, LV_OPA_COVER, LV_PART_MAIN);
+
+    //  Title 
+    lv_obj_t* title = lv_label_create(screen);
+    lv_label_set_text(title, "Driver Profiles");
+    lv_obj_set_style_text_font(title, &lv_font_montserrat_30, LV_PART_MAIN);
+    lv_obj_set_align(title, LV_ALIGN_TOP_MID);
+    lv_obj_set_y(title, 10);
+
+    //  Current Profile Label 
+    lv_obj_t* label = lv_label_create(screen);
+    lv_label_set_text_fmt(label, "%s", profile_list[current_profile_selection].name);
+    lv_obj_set_style_text_font(label, &lv_font_montserrat_30, LV_PART_MAIN);
+    lv_obj_set_align(label, LV_ALIGN_CENTER);
+
+    //  Left Tap Zone 
+    lv_obj_t* left = lv_button_create(screen);
+    lv_obj_set_size(left, 100, 200);
+    lv_obj_set_align(left, LV_ALIGN_LEFT_MID);
+    lv_obj_set_style_bg_opa(left, LV_OPA_TRANSP, LV_PART_MAIN);
+    lv_obj_add_event_cb(left, left_profile_event_cb, LV_EVENT_CLICKED, label);
+
+    //  Right Tap Zone 
+    lv_obj_t* right = lv_button_create(screen);
+    lv_obj_set_size(right, 100, 200);
+    lv_obj_set_align(right, LV_ALIGN_RIGHT_MID);
+    lv_obj_set_style_bg_opa(right, LV_OPA_TRANSP, LV_PART_MAIN);
+    lv_obj_add_event_cb(right, right_profile_event_cb, LV_EVENT_CLICKED, label);
+
+    //  Back Button 
+    lv_obj_t* back = lv_button_create(screen);
+    lv_obj_set_size(back, 100, 50);
+    lv_obj_set_align(back, LV_ALIGN_BOTTOM_MID);
+    lv_obj_set_y(back, -10);
+
+    lv_obj_t* blabel = lv_label_create(back);
+    lv_label_set_text(blabel, "Back");
+    lv_obj_center(blabel);
+
+    lv_obj_add_event_cb(back, back_profile_event_cb, LV_EVENT_CLICKED, nullptr);
+}
+
+//  Odometry Screen 
 void create_odometry_screen() {
     lv_obj_t* screen = lv_obj_create(nullptr);
     lv_screen_load(screen);
@@ -152,7 +226,7 @@ void create_odometry_screen() {
     lv_obj_add_event(back, [](lv_event_t* e) { create_main_screen(); }, LV_EVENT_CLICKED, nullptr);
 }
 
-// ---------------- PID Screen ----------------
+//  PID Screen 
 void create_pid_screen() {
     lv_obj_t* screen = lv_obj_create(nullptr);
     lv_screen_load(screen);

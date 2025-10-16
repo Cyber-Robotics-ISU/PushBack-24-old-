@@ -1,10 +1,17 @@
 #include "global.hpp"
 #include "mecanum_drive.hpp"
 #include "autons.hpp"  
+#include "driver_profile.hpp"
 
 /** Define Variables  */
-//Auton Color Side Selected
-int current_auton_selection = 0;
+int current_profile_selection = 0; // Currently selected profile index
+std::vector<ProfileOption> profile_list = {
+    {"Default", default_profile},
+    {"Calvin", calvin_profile},
+    {"IDK", unknown_profile}
+};
+
+int current_auton_selection = 0;// Currently selected auton index
 
 std::vector<AutonOption> auton_list = {
     {"Left Auton", auton_left},
@@ -13,13 +20,13 @@ std::vector<AutonOption> auton_list = {
 };
 int autonColor = 1; // 1 is blue by defualt  -1 is red
 
-pros::Motor FUCKTEST(16, pros::MotorGearset::blue);
-
 /** Define Controllers  */
 // Defined VEX PROS Main Master Controller
 pros::Controller masterController(pros::E_CONTROLLER_MASTER);
 
 /** Define Motors  */
+pros::Motor FUCKTEST(16, pros::MotorGearset::blue);
+
 // Front-left motors
 pros::Motor front_left1(10, pros::MotorGearset::blue);
 pros::Motor front_left2(9, pros::MotorGearset::blue);
