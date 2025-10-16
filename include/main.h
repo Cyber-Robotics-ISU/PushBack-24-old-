@@ -18,8 +18,6 @@
 // defined global.hpp
 #include "global.hpp"
 
-<<<<<<< Updated upstream
-=======
 // defined lvgh
 #include "liblvgl/lvgl.h"
 
@@ -29,12 +27,6 @@
 // defined pid
 #include "pid.hpp"
 
-#include "ui.hpp" 
-
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 /**
  * If defined, some commonly used enums will have preprocessor macros which give
  * a shorter, more convenient naming pattern. If this isn't desired, simply

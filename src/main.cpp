@@ -1,6 +1,4 @@
 #include "main.h"
-<<<<<<< Updated upstream
-=======
 #include "global.hpp"
 
 #include "mecanum_drive.hpp"
@@ -17,10 +15,6 @@
 
 #include "ui.hpp" 
 #include "pros/apix.h"
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 
 /**
  * Runs initialization code. This occurs as soon as the program is started.
@@ -30,14 +24,7 @@
  */
 void initialize() {
     pros::lcd::initialize(); // initialize brain screen
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
     create_main_screen();
->>>>>>> Stashed changes
-=======
-    create_main_screen();
->>>>>>> Stashed changes
 }
 
 
@@ -71,9 +58,6 @@ void competition_initialize() {}
  * will be stopped. Re-enabling the robot will restart the task, not re-start it
  * from where it left off.
  */
-<<<<<<< Updated upstream
-void autonomous() {}
-=======
 void autonomous() {
     auton_list[current_auton_selection].func();
     // Tune PIDs here:
@@ -90,7 +74,6 @@ void autonomous() {
     drive.turnPIDAngle(90);       // Turn 90 degrees clockwise
     */
 }
->>>>>>> Stashed changes
 
 /**
  * Runs the operator control code. This function will be started in its own task
@@ -102,17 +85,10 @@ void autonomous() {
  * following initialize().
  *
  * If the robot is disabled or communications is lost, the
- * operator control task will be stopped. Re-enabling the robot wil l restart the
+ * operator control task will be stopped. Re-enabling the robot will restart the
  * task, not resume it from where it left off.
  */
 void opcontrol() {
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-	
-	while (true) {	
-=======
-=======
->>>>>>> Stashed changes
 	while (true) {	
         double vx = masterController.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_X);
         double vy = -masterController.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
@@ -124,10 +100,6 @@ void opcontrol() {
             FUCKTEST.move(127);
         }
 
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 		pros::delay(20);                               // Run for 20 ms then update
 	}
 } // End of opcontrol 

@@ -1,22 +1,4 @@
 #include "global.hpp"
-<<<<<<< Updated upstream
-
-// Define variables 
-
-// Defined VEX Main Master Controller
-pros::Controller masterController(pros::E_CONTROLLER_MASTER);
-
-// Define VEX Motors
-
-// Define VEX Motor Groups
-pros::MotorGroup left_motor_group({-1, 2, -3}, pros::MotorGearset::blue); // left motors use 600 RPM cartrifges
-pros::MotorGroup right_motor_group({4, -5, 6}, pros::MotorGearset::blue); // right motors use 600 RPM cartridges
-
-// Define VEX Sensors
-pros::Imu imu(10); 
-pros::Rotation horizontal_encoder(20); // horizontal tracking wheel Rotation sensor
-pros::Rotation vertical_encoder(21); // vertical tracking wheel Rotation sensor
-=======
 #include "mecanum_drive.hpp"
 #include "autons.hpp"  
 
@@ -64,7 +46,6 @@ std::vector<pros::Motor*> motorGroupBackRight = { &back_right1, &back_right2 };
 pros::Imu imu(21); 
 pros::Rotation horizontal_encoder(5); // horizontal tracking wheel Rotation sensor
 pros::Rotation vertical_encoder(6); // vertical tracking wheel Rotation sensor
-<<<<<<< Updated upstream
 
 MecanumDrive drive(
     {&front_left1, &front_left2},
@@ -80,21 +61,3 @@ MecanumDrive drive(
     3.0    // gear ratio (motor revs per wheel rev)
 );
 
->>>>>>> Stashed changes
-=======
-
-MecanumDrive drive(
-    {&front_left1, &front_left2},
-    {&front_right1, &front_right2},
-    {&back_left1, &back_left2},
-    {&back_right1, &back_right2},
-    &imu,
-    &vertical_encoder,
-    &horizontal_encoder,
-    4.0,   // wheel diameter in inches
-    13.5,  // track width
-    13.0,  // track base
-    3.0    // gear ratio (motor revs per wheel rev)
-);
-
->>>>>>> Stashed changes
