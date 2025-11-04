@@ -113,11 +113,21 @@ void create_auton_screen() {
     lv_obj_set_style_bg_opa(left, LV_OPA_TRANSP, LV_PART_MAIN);
     lv_obj_add_event_cb(left, left_btn_event_cb, LV_EVENT_CLICKED, label);
 
+    // Add arrow label for left
+    lv_obj_t* left_arrow = lv_label_create(left);
+    lv_label_set_text(left_arrow, LV_SYMBOL_LEFT); // “<” arrow
+    lv_obj_center(left_arrow);
+
     lv_obj_t* right = lv_button_create(screen);
     lv_obj_set_size(right, 100, 200);
     lv_obj_set_align(right, LV_ALIGN_RIGHT_MID);
     lv_obj_set_style_bg_opa(right, LV_OPA_TRANSP, LV_PART_MAIN);
     lv_obj_add_event_cb(right, right_btn_event_cb, LV_EVENT_CLICKED, label);
+
+    // Add arrow label for right
+    lv_obj_t* right_arrow = lv_label_create(right);
+    lv_label_set_text(right_arrow, LV_SYMBOL_RIGHT); // “>” arrow
+    lv_obj_center(right_arrow);
 
     //  Back Button 
     lv_obj_t* back = lv_button_create(screen);
@@ -131,6 +141,7 @@ void create_auton_screen() {
 
     lv_obj_add_event_cb(back, back_btn_event_cb, LV_EVENT_CLICKED, nullptr);
 }
+
 
 //  Static Callbacks (Profiles) 
 static void left_profile_event_cb(lv_event_t* e) {
@@ -181,12 +192,22 @@ void create_profiles_screen() {
     lv_obj_set_style_bg_opa(left, LV_OPA_TRANSP, LV_PART_MAIN);
     lv_obj_add_event_cb(left, left_profile_event_cb, LV_EVENT_CLICKED, label);
 
+    // Add arrow label for left
+    lv_obj_t* left_arrow = lv_label_create(left);
+    lv_label_set_text(left_arrow, LV_SYMBOL_LEFT); // “<” arrow
+    lv_obj_center(left_arrow);
+
     //  Right Tap Zone 
     lv_obj_t* right = lv_button_create(screen);
     lv_obj_set_size(right, 100, 200);
     lv_obj_set_align(right, LV_ALIGN_RIGHT_MID);
     lv_obj_set_style_bg_opa(right, LV_OPA_TRANSP, LV_PART_MAIN);
     lv_obj_add_event_cb(right, right_profile_event_cb, LV_EVENT_CLICKED, label);
+
+    // Add arrow label for right
+    lv_obj_t* right_arrow = lv_label_create(right);
+    lv_label_set_text(right_arrow, LV_SYMBOL_RIGHT); // “>” arrow
+    lv_obj_center(right_arrow);
 
     //  Back Button 
     lv_obj_t* back = lv_button_create(screen);
