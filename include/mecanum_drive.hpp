@@ -212,11 +212,12 @@ public:
             vx = vx_field;
             vy = vy_field;
         }
+        // devank & simon fixed
+        double fl = vy - vx + omega;
+        double fr = vy + vx - omega;
+        double bl = vy + vx + omega;
+        double br = vy - vx - omega;
 
-        double fl = vy + vx + omega;
-        double fr = vy - vx - omega;
-        double bl = vy - vx + omega;
-        double br = vy + vx - omega;
 
         double maxMagnitude = std::max({std::fabs(fl), std::fabs(fr), std::fabs(bl), std::fabs(br)});
         if (maxMagnitude > maxPower) {

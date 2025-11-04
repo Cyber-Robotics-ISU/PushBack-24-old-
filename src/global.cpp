@@ -28,20 +28,20 @@ pros::Controller masterController(pros::E_CONTROLLER_MASTER);
 pros::Motor FUCKTEST(16, pros::MotorGearset::blue);
 
 // Front-left motors
-pros::Motor front_left1(10, pros::MotorGearset::blue);
-pros::Motor front_left2(9, pros::MotorGearset::blue);
+pros::Motor front_left1(-17, pros::MotorGearset::blue);
+pros::Motor front_left2(-18, pros::MotorGearset::blue);
 
 // Front-right motors (reversed if needed)
-pros::Motor front_right1(-20, pros::MotorGearset::blue);
-pros::Motor front_right2(-19, pros::MotorGearset::blue);
+pros::Motor front_right1(7, pros::MotorGearset::blue);
+pros::Motor front_right2(8, pros::MotorGearset::blue);
 
 // Back-left motors
-pros::Motor back_left1(1, pros::MotorGearset::blue);
-pros::Motor back_left2(2, pros::MotorGearset::blue);
+pros::Motor back_left1(-19, pros::MotorGearset::blue);
+pros::Motor back_left2(-20, pros::MotorGearset::blue);
 
 // Back-right motors (reversed if needed)
-pros::Motor back_right1(-11, pros::MotorGearset::blue);
-pros::Motor back_right2(-12, pros::MotorGearset::blue);
+pros::Motor back_right1(9, pros::MotorGearset::blue);
+pros::Motor back_right2(10, pros::MotorGearset::blue);
 
 std::vector<pros::Motor*> motorGroupFrontLeft = { &front_left1, &front_left2 };
 std::vector<pros::Motor*> motorGroupFrontRight = { &front_right1, &front_right2 };
@@ -50,7 +50,7 @@ std::vector<pros::Motor*> motorGroupBackRight = { &back_right1, &back_right2 };
 
 
 /** Define Sensors  */
-pros::Imu imu(21); 
+pros::Imu imu(11); 
 pros::Rotation horizontal_encoder(5); // horizontal tracking wheel Rotation sensor
 pros::Rotation vertical_encoder(6); // vertical tracking wheel Rotation sensor
 
