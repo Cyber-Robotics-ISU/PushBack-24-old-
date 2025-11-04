@@ -18,6 +18,18 @@
 // defined global.hpp
 #include "global.hpp"
 
+// defined lvgh
+#include "liblvgl/lvgl.h"
+
+// defined mecanum_drive
+#include "mecanum_drive.hpp"
+
+// defined pid
+#include "pid.hpp"
+
+// define driver profile file
+#include "driver_profile.hpp"
+
 /**
  * If defined, some commonly used enums will have preprocessor macros which give
  * a shorter, more convenient naming pattern. If this isn't desired, simply
