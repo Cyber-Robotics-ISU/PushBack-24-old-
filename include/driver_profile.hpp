@@ -13,4 +13,10 @@
 // Function declarations of different user profiles for driver control
 void default_profile();
 void calvin_profile();
+<<<<<<< Updated upstream
 void unknown_profile();
+=======
+void unknown_profile();
+void toggleIntake();
+void testOptical();
+>>>>>>> Stashed changes

@@ -48,11 +48,17 @@ std::vector<pros::Motor*> motorGroupFrontRight = { &front_right1, &front_right2 
 std::vector<pros::Motor*> motorGroupBackLeft = { &back_left1, &back_left2 };
 std::vector<pros::Motor*> motorGroupBackRight = { &back_right1, &back_right2 };
 
+<<<<<<< Updated upstream
+=======
+pros::MotorGroup motorGroupIntake({15, 17});
+>>>>>>> Stashed changes
 
 /** Define Sensors  */
 pros::Imu imu(11); 
 pros::Rotation horizontal_encoder(5); // horizontal tracking wheel Rotation sensor
 pros::Rotation vertical_encoder(6); // vertical tracking wheel Rotation sensor
+pros::Optical optical_sensor(7);
+
 
 MecanumDrive drive(
     {&front_left1, &front_left2},

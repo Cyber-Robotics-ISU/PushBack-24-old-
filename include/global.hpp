@@ -51,5 +51,6 @@ extern std::vector<pros::Motor*> motorGroupBackRight;
 extern pros::Imu imu;
 extern pros::Rotation horizontal_encoder;
 extern pros::Rotation vertical_encoder;
+extern pros::Optical optical_sensor;
 
 extern MecanumDrive drive;
