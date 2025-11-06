@@ -37,12 +37,15 @@ extern pros::Motor back_left1;
 extern pros::Motor back_left2;
 extern pros::Motor back_right1;
 extern pros::Motor back_right2;
+extern pros::Motor left_intake;
+extern pros::Motor right_intake;
 
 // Motor group vectors (extern)
 extern std::vector<pros::Motor*> motorGroupFrontLeft;
 extern std::vector<pros::Motor*> motorGroupFrontRight;
 extern std::vector<pros::Motor*> motorGroupBackLeft;
 extern std::vector<pros::Motor*> motorGroupBackRight;
+extern pros::MotorGroup motorGroupIntake;
 
 /** Define Motor Groups */
 

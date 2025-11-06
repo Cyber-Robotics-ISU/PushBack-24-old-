@@ -14,3 +14,4 @@
 void default_profile();
 void calvin_profile();
 void unknown_profile();
+void toggleIntake();

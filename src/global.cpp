@@ -43,11 +43,16 @@ pros::Motor back_left2(2, pros::MotorGearset::blue);
 pros::Motor back_right1(-11, pros::MotorGearset::blue);
 pros::Motor back_right2(-12, pros::MotorGearset::blue);
 
+// Intake motors
+pros::Motor left_intake(15, pros::MotorGearset::green);
+pros::Motor right_intake(17, pros::MotorGearset::green);
+
 std::vector<pros::Motor*> motorGroupFrontLeft = { &front_left1, &front_left2 };
 std::vector<pros::Motor*> motorGroupFrontRight = { &front_right1, &front_right2 };
 std::vector<pros::Motor*> motorGroupBackLeft = { &back_left1, &back_left2 };
 std::vector<pros::Motor*> motorGroupBackRight = { &back_right1, &back_right2 };
 
+pros::MotorGroup motorGroupIntake({&left_intake, &right_intake });
 
 /** Define Sensors  */
 pros::Imu imu(21); 
