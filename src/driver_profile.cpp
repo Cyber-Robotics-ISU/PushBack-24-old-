@@ -7,7 +7,11 @@
 #include "api.h"
 
 #include "global.hpp"
-//toggle 
+
+void default_profile_init() {
+    masterController.set_text(0,1, "test 0");
+}
+
 void default_profile() {
     double vx = masterController.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_X);
     double vy = -masterController.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
@@ -20,10 +24,18 @@ void default_profile() {
     }
 }
 
-void calvin_profile() {
+void calvin_profile_init() {
+   masterController.set_text(0,1, "test 1");
+}
+
+void calvin_profile_loop() {
    
 }
 
-void unknown_profile() {
+void unknown_profile_init() {
+    masterController.set_text(0,1, "test 2");
+}
+
+void unknown_profile_loop() {
     
 }

@@ -11,6 +11,10 @@
 
 
 // Function declarations of different user profiles for driver control
-void default_profile();
-void calvin_profile();
-void unknown_profile();
+void default_profile_init();
+void calvin_profile_init();
+void unknown_profile_init();
+
+void default_profile_loop();
+void calvin_profile_loop();
+void unknown_profile_loop();

@@ -6,9 +6,9 @@
 /** Define Variables  */
 int current_profile_selection = 0; // Currently selected profile index
 std::vector<ProfileOption> profile_list = {
-    {"Default", default_profile},
-    {"Calvin", calvin_profile},
-    {"IDK", unknown_profile}
+    {"Default", default_profile_loop, default_profile_init},
+    {"Calvin", calvin_profile_loop, calvin_profile_init},
+    {"IDK", unknown_profile_loop, unknown_profile_init}
 };
 
 int current_auton_selection = 0;// Currently selected auton index

@@ -8,7 +8,8 @@
 /** Define global variables and objects here */
 struct ProfileOption { // profile option struct
     const char* name;
-    void (*func)();
+    void (*init)();
+    void (*loop)();
 };
 extern int current_profile_selection; // current profile selection
 extern std::vector<ProfileOption> profile_list;

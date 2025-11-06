@@ -89,8 +89,18 @@ void autonomous() {
  * task, not resume it from where it left off.
  */
 void opcontrol() {
-	while (true) {	
-        profile_list[current_profile_selection].func();
-		pros::delay(20); // Run for 20 ms then update
+    pros::delay(20);
+
+	int last_profile_selection = current_profile_selection;
+    profile_list[current_profile_selection].init();
+
+	while (true) {
+         if (current_profile_selection != last_profile_selection) {
+            profile_list[current_profile_selection].init();
+            last_profile_selection = current_profile_selection;
+        }
+
+        profile_list[current_profile_selection].loop();
+		pros::delay(20);                               // Run for 20 ms then update
 	}
 } // End of opcontrol 
