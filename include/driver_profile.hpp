@@ -10,6 +10,7 @@
 #include "global.hpp"
 
 
+void optSensorTest();
 // Function declarations of different user profiles for driver control
 void default_profile();
 void calvin_profile();

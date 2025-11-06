@@ -89,6 +89,7 @@ void autonomous() {
  * task, not resume it from where it left off.
  */
 void opcontrol() {
+    masterController.clear_line(0);
 	while (true) {	
         profile_list[current_profile_selection].func();
 		pros::delay(20); // Run for 20 ms then update
