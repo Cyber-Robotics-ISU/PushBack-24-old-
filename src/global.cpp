@@ -6,26 +6,60 @@
 /** Define Variables  */
 int current_profile_selection = 0; // Currently selected profile index
 std::vector<ProfileOption> profile_list = {
-    {"Default", default_profile_init, default_profile_loop},
-    {"Calvin", calvin_profile_init, calvin_profile_loop},
-    {"IDK", unknown_profile_init, unknown_profile_loop}
+    {"Default", default_profile_init, default_profile_loop, "Basic default driving profile"},
+    {"Calvin", calvin_profile_init, calvin_profile_loop, "precision driver profile"},
+    {"IDK", unknown_profile_init, unknown_profile_loop, "Experimental profile"}
 };
 
-int current_auton_selection = 0;// Currently selected auton index
+// -1 = red, 1 = blue
+int autonColor = 1; // default blue
 
-std::vector<AutonOption> auton_list = {
-    {"Left Auton", auton_left},
-    {"Right Auton", auton_right},
-    {"Skills", auton_skills}
+int current_auton_selection = 0;
+
+// ALL autons stored here
+std::vector<AutonOption> auton_master_list = {
+    { "EXAMPLE",
+      "1234567890123456789\n1234567890123456789\n1234567890123456789\n1234567890123456789\n1234567890123456789",
+      auton_skills,
+      2 }, // blue
+
+    { "RED",
+      "Rush the middle mogo. Scores 2 rings.\nFast and consistent.",
+      auton_left,
+      0 }, // red
+
+    { "BLUE",
+      "Blue version of Mogo Rush.\nScores 2 rings.",
+      auton_right,
+      1 }, // blue
+
+    { "Skills Auton",
+      "Runs full skills path.\nWorks on red or blue.",
+      auton_skills,
+      2 }, // both
 };
-int autonColor = 1; // 1 is blue by defualt  -1 is red
+
+// Starts empty — will be filled based on autonColor
+std::vector<AutonOption> auton_list = {};
 
 /** Define Controllers  */
 // Defined VEX PROS Main Master Controller
 pros::Controller masterController(pros::E_CONTROLLER_MASTER);
 
 /** Define Motors  */
-pros::Motor FUCKTEST(16, pros::MotorGearset::blue);
+pros::Motor FUCKTEST(21, pros::MotorGearset::blue);
+pros::Motor FUCKTEST2(21, pros::MotorGearset::blue);
+
+pros::Motor intakeMotorA(-1, pros::MotorGearset::blue);
+bool intakeToggleA = false;
+pros::Motor intakeMotorB(2, pros::MotorGearset::blue);
+bool intakeToggleB = false;
+pros::Motor intakeMotorC(3, pros::MotorGearset::blue);
+bool intakeToggleC = false;
+pros::Motor intakeMotorD(4, pros::MotorGearset::green);
+bool intakeToggleD = false;
+pros::Motor intakeMotorE(16, pros::MotorGearset::green);
+bool intakeToggleE = false;
 
 // Front-left motors
 pros::Motor front_left1(-17, pros::MotorGearset::blue);
@@ -51,8 +85,10 @@ std::vector<pros::Motor*> motorGroupBackRight = { &back_right1, &back_right2 };
 
 /** Define Sensors  */
 pros::Imu imu(11); 
-pros::Rotation horizontal_encoder(5); // horizontal tracking wheel Rotation sensor
-pros::Rotation vertical_encoder(6); // vertical tracking wheel Rotation sensor
+pros::Optical colorCheck(6);
+pros::Optical colorCheck2(11);
+pros::Rotation horizontal_encoder(21); // horizontal tracking wheel Rotation sensor
+pros::Rotation vertical_encoder(21); // vertical tracking wheel Rotation sensor
 
 MecanumDrive drive(
     {&front_left1, &front_left2},

@@ -1,5 +1,6 @@
 #pragma once
 #include "api.h"
+#include <vector>
 #include "mecanum_drive.hpp"
 #include "autons.hpp"  
 #include "driver_profile.hpp"
@@ -8,18 +9,33 @@
 /** Define global variables and objects here */
 struct ProfileOption { // profile option struct
     const char* name;
-    void (*init)();
-    void (*loop)();
+    void (*init)(); // runs once when switching
+    void (*loop)(); // runs every cycle
+    const char* description; 
 };
 extern int current_profile_selection; // current profile selection
 extern std::vector<ProfileOption> profile_list;
 
-struct AutonOption { // Auton Option struct
+struct AutonOption {
     const char* name;
+    const char* description;
     void (*func)();
+    int side;  // 0 = red, 1 = blue, 2 = both
 };
+
+// -1 = red, 1 = blue
 extern int autonColor;
-extern int current_auton_selection; // Current auton selection
+#define IS_BLUE (autonColor == 1)
+#define IS_RED  (autonColor == -1)
+
+
+
+extern int current_auton_selection;
+
+// master list (ALL autons)
+extern std::vector<AutonOption> auton_master_list;
+
+// filtered list (only shows blue/red/both)
 extern std::vector<AutonOption> auton_list;
 
 
@@ -29,6 +45,21 @@ extern std::vector<AutonOption> auton_list;
 extern pros::Controller masterController;
 
 extern pros::Motor FUCKTEST;
+extern pros::Motor FUCKTEST2;
+
+
+extern pros::Motor intakeMotorA;
+extern pros::Motor intakeMotorB;
+extern pros::Motor intakeMotorC;
+extern pros::Motor intakeMotorD;
+extern pros::Motor intakeMotorE;
+
+extern bool intakeToggleA;
+extern bool intakeToggleB;
+extern bool intakeToggleC;
+extern bool intakeToggleD;
+extern bool intakeToggleE;
+
 /** Define Drive Train Motors */
 extern pros::Motor front_left1;
 extern pros::Motor front_left2;
@@ -50,6 +81,8 @@ extern std::vector<pros::Motor*> motorGroupBackRight;
 
 /** Define Sensors */
 extern pros::Imu imu;
+extern pros::Optical colorCheck;
+extern pros::Optical colorCheck2;
 extern pros::Rotation horizontal_encoder;
 extern pros::Rotation vertical_encoder;
 

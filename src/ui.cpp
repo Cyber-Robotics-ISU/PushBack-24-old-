@@ -8,6 +8,23 @@
 #include "global.hpp"
 #include "autons.hpp"  
 
+void updateAutonList() {
+    auton_list.clear();
+
+    for (auto &a : auton_master_list) {
+        if (a.side == 2) {
+            auton_list.push_back(a); // both sides
+        } else if (a.side == 1 && autonColor == 1) {
+            auton_list.push_back(a); // blue
+        } else if (a.side == 0 && autonColor == -1) {
+            auton_list.push_back(a); // red
+        }
+    }
+
+    current_auton_selection = 0;
+}
+
+
 // clear screen
 void clear_screen(lv_obj_t* screen) {
     lv_obj_clean(screen);
@@ -42,7 +59,7 @@ void create_main_screen() {
 
     // Auton Select (Top Left)
     lv_obj_t* btn_auton = create_button(screen, "Auton Select",
-        LV_ALIGN_TOP_LEFT, 20, 20, create_auton_screen);
+    LV_ALIGN_TOP_LEFT, 20, 20, create_auton_color_screen);
     lv_obj_set_size(btn_auton, btn_w, btn_h);
 
     // Profiles (Top Right)
@@ -59,6 +76,56 @@ void create_main_screen() {
     lv_obj_t* btn_pid = create_button(screen, "PID Tuning",
         LV_ALIGN_BOTTOM_RIGHT, -20, -20, create_pid_screen);
     lv_obj_set_size(btn_pid, btn_w, btn_h);
+}
+
+
+void auton_red_select() {
+    autonColor = -1;   // red
+    updateAutonList(); // filter the list
+    create_auton_screen();
+}
+
+void auton_blue_select() {
+    autonColor = 1;    // blue
+    updateAutonList();
+    create_auton_screen();
+}
+
+void create_auton_color_screen() {
+    lv_obj_t* screen = lv_obj_create(nullptr);
+    lv_screen_load(screen);
+
+    lv_obj_set_style_bg_color(screen, lv_color_hex(0x223355), LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(screen, LV_OPA_COVER, LV_PART_MAIN);
+
+    // Title
+    lv_obj_t* title = lv_label_create(screen);
+    lv_label_set_text(title, "Choose Auton Side");
+    lv_obj_set_style_text_font(title, &lv_font_montserrat_30, LV_PART_MAIN);
+    lv_obj_set_align(title, LV_ALIGN_TOP_MID);
+    lv_obj_set_y(title, 10);
+
+    // RED Button
+    create_button(screen, "RED AUTONS",
+        LV_ALIGN_LEFT_MID, 30, 0, auton_red_select);
+
+    // BLUE Button
+    create_button(screen, "BLUE AUTONS",
+        LV_ALIGN_RIGHT_MID, -30, 0, auton_blue_select);
+
+    // Back button
+    lv_obj_t* back = lv_button_create(screen);
+    lv_obj_set_size(back, 120, 50);
+    lv_obj_set_align(back, LV_ALIGN_BOTTOM_MID);
+    lv_obj_set_y(back, -10);
+
+    lv_obj_t* blabel = lv_label_create(back);
+    lv_label_set_text(blabel, "Back");
+    lv_obj_center(blabel);
+
+    lv_obj_add_event_cb(back, [](lv_event_t* e) {
+        create_main_screen();
+    }, LV_EVENT_CLICKED, nullptr);
 }
 
 
@@ -93,43 +160,76 @@ void create_auton_screen() {
     lv_obj_set_style_bg_color(screen, lv_color_hex(0x223355), LV_PART_MAIN);
     lv_obj_set_style_bg_opa(screen, LV_OPA_COVER, LV_PART_MAIN);
 
-    //  Title 
+    // Title
     lv_obj_t* title = lv_label_create(screen);
     lv_label_set_text(title, "Auton Selector");
     lv_obj_set_style_text_font(title, &lv_font_montserrat_30, LV_PART_MAIN);
     lv_obj_set_align(title, LV_ALIGN_TOP_MID);
     lv_obj_set_y(title, 10);
 
-    //  Current Auton Label 
-    lv_obj_t* label = lv_label_create(screen);
-    lv_label_set_text_fmt(label, "%s", auton_list[current_auton_selection].name);
-    lv_obj_set_style_text_font(label, &lv_font_montserrat_30, LV_PART_MAIN);
-    lv_obj_set_align(label, LV_ALIGN_CENTER);
+    // Auton Name
+    lv_obj_t* name_label = lv_label_create(screen);
+    lv_label_set_text(name_label, auton_list[current_auton_selection].name);
+    lv_obj_set_style_text_font(name_label, &lv_font_montserrat_30, LV_PART_MAIN);
+    lv_obj_set_align(name_label, LV_ALIGN_CENTER);
+    lv_obj_set_y(name_label, -60);
 
-    //  Left/Right Tap Areas 
+    // Auton Description
+    lv_obj_t* desc_label = lv_label_create(screen);
+    lv_label_set_text(desc_label, auton_list[current_auton_selection].description);
+    lv_obj_set_style_text_font(desc_label, &lv_font_montserrat_18, LV_PART_MAIN);
+    lv_label_set_long_mode(desc_label, LV_LABEL_LONG_WRAP);
+    lv_obj_set_width(desc_label, 200); // wrap text nicely
+    lv_obj_set_align(desc_label, LV_ALIGN_CENTER);
+    lv_obj_set_y(desc_label, 0);
+
+    // Left button
     lv_obj_t* left = lv_button_create(screen);
     lv_obj_set_size(left, 100, 200);
     lv_obj_set_align(left, LV_ALIGN_LEFT_MID);
     lv_obj_set_style_bg_opa(left, LV_OPA_TRANSP, LV_PART_MAIN);
-    lv_obj_add_event_cb(left, left_btn_event_cb, LV_EVENT_CLICKED, label);
 
-    // Add arrow label for left
+    lv_obj_add_event_cb(left, [](lv_event_t* e) {
+        lv_obj_t** labels = (lv_obj_t**)lv_event_get_user_data(e);
+
+        // update selection
+        current_auton_selection--;
+        if (current_auton_selection < 0)
+            current_auton_selection = auton_list.size() - 1;
+
+        // update both labels
+        lv_label_set_text(labels[0], auton_list[current_auton_selection].name);
+        lv_label_set_text(labels[1], auton_list[current_auton_selection].description);
+    }, LV_EVENT_CLICKED, new lv_obj_t*[2]{name_label, desc_label});
+
+    // Left arrow
     lv_obj_t* left_arrow = lv_label_create(left);
-    lv_label_set_text(left_arrow, LV_SYMBOL_LEFT); // “<” arrow
+    lv_label_set_text(left_arrow, LV_SYMBOL_LEFT);
     lv_obj_center(left_arrow);
 
+    // Right button
     lv_obj_t* right = lv_button_create(screen);
     lv_obj_set_size(right, 100, 200);
     lv_obj_set_align(right, LV_ALIGN_RIGHT_MID);
     lv_obj_set_style_bg_opa(right, LV_OPA_TRANSP, LV_PART_MAIN);
-    lv_obj_add_event_cb(right, right_btn_event_cb, LV_EVENT_CLICKED, label);
 
-    // Add arrow label for right
+    lv_obj_add_event_cb(right, [](lv_event_t* e) {
+        lv_obj_t** labels = (lv_obj_t**)lv_event_get_user_data(e);
+
+        current_auton_selection++;
+        if (current_auton_selection >= (int)auton_list.size())
+            current_auton_selection = 0;
+
+        lv_label_set_text(labels[0], auton_list[current_auton_selection].name);
+        lv_label_set_text(labels[1], auton_list[current_auton_selection].description);
+    }, LV_EVENT_CLICKED, new lv_obj_t*[2]{name_label, desc_label});
+
+    // Right arrow
     lv_obj_t* right_arrow = lv_label_create(right);
-    lv_label_set_text(right_arrow, LV_SYMBOL_RIGHT); // “>” arrow
+    lv_label_set_text(right_arrow, LV_SYMBOL_RIGHT);
     lv_obj_center(right_arrow);
 
-    //  Back Button 
+    // Back button
     lv_obj_t* back = lv_button_create(screen);
     lv_obj_set_size(back, 100, 50);
     lv_obj_set_align(back, LV_ALIGN_BOTTOM_MID);
@@ -141,7 +241,6 @@ void create_auton_screen() {
 
     lv_obj_add_event_cb(back, back_btn_event_cb, LV_EVENT_CLICKED, nullptr);
 }
-
 
 //  Static Callbacks (Profiles) 
 static void left_profile_event_cb(lv_event_t* e) {
@@ -165,6 +264,7 @@ static void back_profile_event_cb(lv_event_t* e) {
 }
 
 //  Profiles Screen 
+//  Profiles Screen 
 void create_profiles_screen() {
     lv_obj_t* screen = lv_obj_create(nullptr);
     lv_screen_load(screen);
@@ -172,44 +272,72 @@ void create_profiles_screen() {
     lv_obj_set_style_bg_color(screen, lv_color_hex(0x334466), LV_PART_MAIN);
     lv_obj_set_style_bg_opa(screen, LV_OPA_COVER, LV_PART_MAIN);
 
-    //  Title 
+    // Title
     lv_obj_t* title = lv_label_create(screen);
     lv_label_set_text(title, "Driver Profiles");
     lv_obj_set_style_text_font(title, &lv_font_montserrat_30, LV_PART_MAIN);
     lv_obj_set_align(title, LV_ALIGN_TOP_MID);
     lv_obj_set_y(title, 10);
 
-    //  Current Profile Label 
-    lv_obj_t* label = lv_label_create(screen);
-    lv_label_set_text_fmt(label, "%s", profile_list[current_profile_selection].name);
-    lv_obj_set_style_text_font(label, &lv_font_montserrat_30, LV_PART_MAIN);
-    lv_obj_set_align(label, LV_ALIGN_CENTER);
+    // Current Profile Name
+    lv_obj_t* name_label = lv_label_create(screen);
+    lv_label_set_text_fmt(name_label, "%s", profile_list[current_profile_selection].name);
+    lv_obj_set_style_text_font(name_label, &lv_font_montserrat_30, LV_PART_MAIN);
+    lv_obj_set_align(name_label, LV_ALIGN_CENTER);
+    lv_obj_set_y(name_label, -60);
 
-    //  Left Tap Zone 
+    // Profile Description
+    lv_obj_t* desc_label = lv_label_create(screen);
+    lv_label_set_text(desc_label, profile_list[current_profile_selection].description);
+    lv_obj_set_style_text_font(desc_label, &lv_font_montserrat_18, LV_PART_MAIN);
+    lv_label_set_long_mode(desc_label, LV_LABEL_LONG_WRAP);
+    lv_obj_set_width(desc_label, 200); // wrap text nicely
+    lv_obj_set_align(desc_label, LV_ALIGN_CENTER);
+    lv_obj_set_y(desc_label, 10);
+
+    // Left Tap Zone
     lv_obj_t* left = lv_button_create(screen);
     lv_obj_set_size(left, 100, 200);
     lv_obj_set_align(left, LV_ALIGN_LEFT_MID);
     lv_obj_set_style_bg_opa(left, LV_OPA_TRANSP, LV_PART_MAIN);
-    lv_obj_add_event_cb(left, left_profile_event_cb, LV_EVENT_CLICKED, label);
+    lv_obj_add_event_cb(left, [](lv_event_t* e) {
+        lv_obj_t** labels = (lv_obj_t**)lv_event_get_user_data(e);
 
-    // Add arrow label for left
+        current_profile_selection--;
+        if (current_profile_selection < 0)
+            current_profile_selection = profile_list.size() - 1;
+
+        lv_label_set_text(labels[0], profile_list[current_profile_selection].name);
+        lv_label_set_text(labels[1], profile_list[current_profile_selection].description);
+    }, LV_EVENT_CLICKED, new lv_obj_t*[2]{name_label, desc_label});
+
+    // Left arrow
     lv_obj_t* left_arrow = lv_label_create(left);
-    lv_label_set_text(left_arrow, LV_SYMBOL_LEFT); // “<” arrow
+    lv_label_set_text(left_arrow, LV_SYMBOL_LEFT);
     lv_obj_center(left_arrow);
 
-    //  Right Tap Zone 
+    // Right Tap Zone
     lv_obj_t* right = lv_button_create(screen);
     lv_obj_set_size(right, 100, 200);
     lv_obj_set_align(right, LV_ALIGN_RIGHT_MID);
     lv_obj_set_style_bg_opa(right, LV_OPA_TRANSP, LV_PART_MAIN);
-    lv_obj_add_event_cb(right, right_profile_event_cb, LV_EVENT_CLICKED, label);
+    lv_obj_add_event_cb(right, [](lv_event_t* e) {
+        lv_obj_t** labels = (lv_obj_t**)lv_event_get_user_data(e);
 
-    // Add arrow label for right
+        current_profile_selection++;
+        if (current_profile_selection >= (int)profile_list.size())
+            current_profile_selection = 0;
+
+        lv_label_set_text(labels[0], profile_list[current_profile_selection].name);
+        lv_label_set_text(labels[1], profile_list[current_profile_selection].description);
+    }, LV_EVENT_CLICKED, new lv_obj_t*[2]{name_label, desc_label});
+
+    // Right arrow
     lv_obj_t* right_arrow = lv_label_create(right);
-    lv_label_set_text(right_arrow, LV_SYMBOL_RIGHT); // “>” arrow
+    lv_label_set_text(right_arrow, LV_SYMBOL_RIGHT);
     lv_obj_center(right_arrow);
 
-    //  Back Button 
+    // Back Button
     lv_obj_t* back = lv_button_create(screen);
     lv_obj_set_size(back, 100, 50);
     lv_obj_set_align(back, LV_ALIGN_BOTTOM_MID);
@@ -221,6 +349,7 @@ void create_profiles_screen() {
 
     lv_obj_add_event_cb(back, back_profile_event_cb, LV_EVENT_CLICKED, nullptr);
 }
+
 
 //  Odometry Screen 
 void create_odometry_screen() {
