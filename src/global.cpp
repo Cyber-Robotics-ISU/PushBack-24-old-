@@ -51,15 +51,10 @@ pros::Motor FUCKTEST(21, pros::MotorGearset::blue);
 pros::Motor FUCKTEST2(21, pros::MotorGearset::blue);
 
 pros::Motor intakeMotorA(-1, pros::MotorGearset::blue);
-bool intakeToggleA = false;
 pros::Motor intakeMotorB(2, pros::MotorGearset::blue);
-bool intakeToggleB = false;
 pros::Motor intakeMotorC(3, pros::MotorGearset::blue);
-bool intakeToggleC = false;
 pros::Motor intakeMotorD(4, pros::MotorGearset::green);
-bool intakeToggleD = false;
 pros::Motor intakeMotorE(16, pros::MotorGearset::green);
-bool intakeToggleE = false;
 
 // Front-left motors
 pros::Motor front_left1(-17, pros::MotorGearset::blue);

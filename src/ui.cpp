@@ -9,8 +9,15 @@
 #include "autons.hpp"  
 
 void updateAutonList() {
+    // 1. Save the name of the currently selected auton (if the list isn't empty)
+    std::string last_selected_name = "";
+    if (!auton_list.empty() && current_auton_selection >= 0 && current_auton_selection < auton_list.size()) {
+        last_selected_name = auton_list[current_auton_selection].name;
+    }
+
     auton_list.clear();
 
+    // 2. Rebuild the list based on color
     for (auto &a : auton_master_list) {
         if (a.side == 2) {
             auton_list.push_back(a); // both sides
@@ -21,7 +28,16 @@ void updateAutonList() {
         }
     }
 
-    current_auton_selection = 0;
+    // 3. Try to find the previous auton in the new list
+    current_auton_selection = 0; // Default to 0 (first item) just in case
+    
+    for (size_t i = 0; i < auton_list.size(); i++) {
+        // If we find the name we saved earlier, set the selection to this index
+        if (last_selected_name == auton_list[i].name) {
+            current_auton_selection = i;
+            break; 
+        }
+    }
 }
 
 
@@ -57,8 +73,28 @@ void create_main_screen() {
     lv_obj_set_style_bg_color(screen, lv_color_hex(0x222244), LV_PART_MAIN);
     lv_obj_set_style_bg_opa(screen, LV_OPA_COVER, LV_PART_MAIN);
 
-    // Auton Select (Top Left)
-    lv_obj_t* btn_auton = create_button(screen, "Auton Select",
+    // --- NEW LOGIC: Generate Button Text ---
+    std::string autonInfo = "Auton Select\n";
+    
+    if (auton_list.empty()) {
+        autonInfo += "(None)";
+    } else {
+        // 1. Add Color Side
+        if (autonColor == 1) autonInfo += "[BLUE] ";
+        else if (autonColor == -1) autonInfo += "[RED] ";
+        else autonInfo += "[?] ";
+
+        // 2. Add Auton Name (Safety Check First)
+        if (current_auton_selection >= 0 && current_auton_selection < auton_list.size()) {
+            autonInfo += auton_list[current_auton_selection].name;
+        } else {
+            autonInfo += "Unknown";
+        }
+    }
+    // ---------------------------------------
+
+    // Auton Select (Top Left) - Now uses the custom text!
+    lv_obj_t* btn_auton = create_button(screen, autonInfo.c_str(),
     LV_ALIGN_TOP_LEFT, 20, 20, create_auton_color_screen);
     lv_obj_set_size(btn_auton, btn_w, btn_h);
 
@@ -106,12 +142,23 @@ void create_auton_color_screen() {
     lv_obj_set_y(title, 10);
 
     // RED Button
-    create_button(screen, "RED AUTONS",
+    lv_obj_t* btnRed = create_button(screen, "RED AUTONS",
         LV_ALIGN_LEFT_MID, 30, 0, auton_red_select);
-
+    
     // BLUE Button
-    create_button(screen, "BLUE AUTONS",
+    lv_obj_t* btnBlue = create_button(screen, "BLUE AUTONS",
         LV_ALIGN_RIGHT_MID, -30, 0, auton_blue_select);
+
+    // --- NEW LOGIC: Highlight Current Selection ---
+    if (autonColor == -1) { // If Red is active
+        lv_obj_set_style_border_color(btnRed, lv_color_hex(0xFFFF00), 0); // Yellow border
+        lv_obj_set_style_border_width(btnRed, 4, 0);
+    } 
+    else if (autonColor == 1) { // If Blue is active
+        lv_obj_set_style_border_color(btnBlue, lv_color_hex(0xFFFF00), 0); // Yellow border
+        lv_obj_set_style_border_width(btnBlue, 4, 0);
+    }
+    // ----------------------------------------------
 
     // Back button
     lv_obj_t* back = lv_button_create(screen);

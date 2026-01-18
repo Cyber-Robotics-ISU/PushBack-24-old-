@@ -54,12 +54,6 @@ extern pros::Motor intakeMotorC;
 extern pros::Motor intakeMotorD;
 extern pros::Motor intakeMotorE;
 
-extern bool intakeToggleA;
-extern bool intakeToggleB;
-extern bool intakeToggleC;
-extern bool intakeToggleD;
-extern bool intakeToggleE;
-
 /** Define Drive Train Motors */
 extern pros::Motor front_left1;
 extern pros::Motor front_left2;
