@@ -46,8 +46,8 @@ void MegaIntakeTask(void*) {
 
         if (toggleTopBasket2Bottom) {
             intakeMotorA.move(-120);
-            intakeMotorB.move(-120);
-            intakeMotorC.move(-120); //
+            intakeMotorB.move(-50);
+            intakeMotorC.move(-50); //
             intakeMotorD.move(120);
             continue; // Skip everything below and restart the loop
         }
@@ -114,7 +114,7 @@ void MegaIntakeTask(void*) {
 
         // --- Base intake motors ---
         intakeMotorA.move(100);
-        intakeMotorE.move(-40);
+        intakeMotorE.move(-120);
 
         // --- Motor C flips if sensor 2 sees wrong color ---
         int powerC = 120;
@@ -131,7 +131,7 @@ void MegaIntakeTask(void*) {
         if (currentTime > intakeBEndTime) {
             if (sendToTop) {
                 intakeMotorB.move(100);
-                intakeMotorD.move(40);
+                intakeMotorD.move(25);
                 intakeBEndTime = currentTime + 300;
                 intakeDEndTime = currentTime + 300;
             } else if (sendToBottom) {
@@ -143,7 +143,7 @@ void MegaIntakeTask(void*) {
         }
 
         if (currentTime > intakeBEndTime) intakeMotorB.move(100);
-        if (currentTime > intakeDEndTime) intakeMotorD.move(40)  ;
+        if (currentTime > intakeDEndTime) intakeMotorD.move(25)  ;
 
         pros::delay(10);
     }
