@@ -201,30 +201,43 @@ public:
 
     // ---------------- Driving ----------------
     void drive(double vx, double vy, double omega, double maxPower = 127.0) {
+        // 1. Field Centric Calculations
         if (imu) {
-            double heading = degToRad(imu->get_heading());
+            // VEX IMU is Clockwise (+), but math uses Counter-Clockwise (+).
+            // So we MUST make the heading negative.
+            double heading = -degToRad(imu->get_heading()); 
+            
             double cosA = cos(heading);
             double sinA = sin(heading);
 
-            // Field-centric transform
+            // Standard Rotation Matrix
             double vx_field = vx * cosA - vy * sinA;
             double vy_field = vx * sinA + vy * cosA;
+            
             vx = vx_field;
             vy = vy_field;
         }
-        // devank & simon fixed
-        double fl = vy - vx + omega;
-        double fr = vy + vx - omega;
-        double bl = vy + vx + omega;
-        double br = vy - vx - omega;
+
+        // 2. Standard Kinematics (The "Correct" Matrix)
+        // FL = Forward + Strafe + Turn
+        // FR = Forward - Strafe - Turn
+        // BL = Forward - Strafe + Turn
+        // BR = Forward + Strafe - Turnx
 
 
+        double fl = vy + vx + omega; 
+        double fr = vy - vx - omega;
+        double bl = vy - vx + omega;
+        double br = vy + vx - omega;
+
+        // 3. Normalization (Keep speeds proportional if they exceed 127)
         double maxMagnitude = std::max({std::fabs(fl), std::fabs(fr), std::fabs(bl), std::fabs(br)});
+        
         if (maxMagnitude > maxPower) {
-            fl = fl / maxMagnitude * maxPower;
-            fr = fr / maxMagnitude * maxPower;
-            bl = bl / maxMagnitude * maxPower;
-            br = br / maxMagnitude * maxPower;
+            fl = (fl / maxMagnitude) * maxPower;
+            fr = (fr / maxMagnitude) * maxPower;
+            bl = (bl / maxMagnitude) * maxPower;
+            br = (br / maxMagnitude) * maxPower;
         }
 
         setMotorPower(motorsFL, fl);

@@ -277,11 +277,12 @@ void default_profile_init() {
 }
 
 void default_profile_loop() {
-    double vx = masterController.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_X);
-    double vy = -masterController.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
-    double omega = masterController.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
+    double strafe = masterController.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_X); // Left/Right
+    double straight = masterController.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y); // Forward/Back
+    double turn = masterController.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X); // Turn
+ 
+    drive.drive(strafe, straight, turn);
 
-    drive.drive(vx, vy, omega);
     if (masterController.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_X)) {
         toggleMegaIntake = !toggleMegaIntake;
 
@@ -322,6 +323,7 @@ void default_profile_loop() {
     if (masterController.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_LEFT)) {
         BottomBasket2TopBasket(); 
     }
+    pros::delay(10);
 }
 
 void calvin_profile_init() {

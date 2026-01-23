@@ -25,6 +25,8 @@
 void initialize() {
     pros::lcd::initialize(); // initialize brain screen
     create_main_screen();
+    imu.reset();
+    drive.drive_brake_set(pros::E_MOTOR_BRAKE_HOLD);
 }
 
 

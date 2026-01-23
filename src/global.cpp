@@ -47,8 +47,8 @@ std::vector<AutonOption> auton_list = {};
 pros::Controller masterController(pros::E_CONTROLLER_MASTER);
 
 /** Define Motors  */
-pros::Motor FUCKTEST(21, pros::MotorGearset::blue);
-pros::Motor FUCKTEST2(21, pros::MotorGearset::blue);
+pros::Motor FUCKTEST(22, pros::MotorGearset::blue);
+pros::Motor FUCKTEST2(22, pros::MotorGearset::blue);
 
 pros::Motor intakeMotorA(-2, pros::MotorGearset::green);
 pros::Motor intakeMotorB(3, pros::MotorGearset::blue);
@@ -57,6 +57,7 @@ pros::Motor intakeMotorD(-8, pros::MotorGearset::green);
 pros::Motor intakeMotorE(7, pros::MotorGearset::green);
 
 // Front-left motors
+// NOTE: If motors in a pair fight each other, flip the sign on one motor.
 pros::Motor front_left1(-14, pros::MotorGearset::blue);
 pros::Motor front_left2(-13, pros::MotorGearset::blue);
 
@@ -86,16 +87,16 @@ pros::Rotation horizontal_encoder(16); // horizontal tracking wheel Rotation sen
 pros::Rotation vertical_encoder(15); // vertical tracking wheel Rotation sensor
 
 MecanumDrive drive(
-    {&front_left1, &front_left2},
-    {&front_right1, &front_right2},
-    {&back_left1, &back_left2},
-    {&back_right1, &back_right2},
+    motorGroupFrontLeft,
+    motorGroupFrontRight,
+    motorGroupBackLeft,
+    motorGroupBackRight,
     &imu,
     &vertical_encoder,
     &horizontal_encoder,
-    4.0,   // wheel diameter in inches
-    13.5,  // track width
-    13.0,  // track base
-    3.0    // gear ratio (motor revs per wheel rev)
+    2.75, // Wheel Diameter (Double check this! 2.0 seems small for Mecanum, usually 3.25 or 4)
+    13.5, // Track Width
+    13.0, // Track Base
+    1.0   // Gear Ratio (1.0 for direct drive blue cart)
 );
 

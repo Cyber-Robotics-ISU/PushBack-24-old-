@@ -14,7 +14,7 @@ void auton_left() {
 }
 
 void auton_right() {
-    FUCKTEST.move(-120);
+
 }
 
 void auton_skills() {
