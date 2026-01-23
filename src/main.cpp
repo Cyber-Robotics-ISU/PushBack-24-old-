@@ -27,6 +27,16 @@ void initialize() {
     create_main_screen();
     imu.reset();
     drive.drive_brake_set(pros::E_MOTOR_BRAKE_HOLD);
+    front_right1.set_reversed(true);
+    front_right2.set_reversed(true);
+    back_right1.set_reversed(true);
+    back_right2.set_reversed(true);
+
+    // Left side NOT reversed
+    front_left1.set_reversed(false);
+    front_left2.set_reversed(false);
+    back_left1.set_reversed(false);
+    back_left2.set_reversed(false);
 }
 
 

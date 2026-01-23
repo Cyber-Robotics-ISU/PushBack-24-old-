@@ -58,16 +58,16 @@ pros::Motor intakeMotorE(7, pros::MotorGearset::green);
 
 // Front-left motors
 // NOTE: If motors in a pair fight each other, flip the sign on one motor.
-pros::Motor front_left1(-14, pros::MotorGearset::blue);
-pros::Motor front_left2(-13, pros::MotorGearset::blue);
+pros::Motor front_left1(14, pros::MotorGearset::blue);
+pros::Motor front_left2(13, pros::MotorGearset::blue);
 
 // Front-right motors (reversed if needed)
 pros::Motor front_right1(17, pros::MotorGearset::blue);
 pros::Motor front_right2(18, pros::MotorGearset::blue);
 
 // Back-left motors
-pros::Motor back_left1(-12, pros::MotorGearset::blue);
-pros::Motor back_left2(-11, pros::MotorGearset::blue);
+pros::Motor back_left1(12, pros::MotorGearset::blue);
+pros::Motor back_left2(11, pros::MotorGearset::blue);
 
 // Back-right motors (reversed if needed)
 pros::Motor back_right1(19, pros::MotorGearset::blue);
