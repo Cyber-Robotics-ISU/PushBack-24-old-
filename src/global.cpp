@@ -45,6 +45,7 @@ std::vector<AutonOption> auton_list = {};
 /** Define Controllers  */
 // Defined VEX PROS Main Master Controller
 pros::Controller masterController(pros::E_CONTROLLER_MASTER);
+pros::Controller slaveController(pros::E_CONTROLLER_PARTNER);
 
 /** Define Motors  */
 pros::Motor FUCKTEST(22, pros::MotorGearset::blue);
@@ -59,14 +60,14 @@ pros::Motor intakeMotorE(7, pros::MotorGearset::green);
 // Front-left motors
 // NOTE: If motors in a pair fight each other, flip the sign on one motor.
 pros::Motor front_left1(14, pros::MotorGearset::blue);
-pros::Motor front_left2(13, pros::MotorGearset::blue);
+pros::Motor front_left2(12, pros::MotorGearset::blue);
 
 // Front-right motors (reversed if needed)
 pros::Motor front_right1(17, pros::MotorGearset::blue);
 pros::Motor front_right2(18, pros::MotorGearset::blue);
 
 // Back-left motors
-pros::Motor back_left1(12, pros::MotorGearset::blue);
+pros::Motor back_left1(13, pros::MotorGearset::blue);
 pros::Motor back_left2(11, pros::MotorGearset::blue);
 
 // Back-right motors (reversed if needed)
@@ -97,6 +98,6 @@ MecanumDrive drive(
     2.75, // Wheel Diameter (Double check this! 2.0 seems small for Mecanum, usually 3.25 or 4)
     13.5, // Track Width
     13.0, // Track Base
-    1.0   // Gear Ratio (1.0 for direct drive blue cart)
+    .8   // Gear Ratio (1.0 for direct drive blue cart)
 );
 

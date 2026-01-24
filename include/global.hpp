@@ -43,6 +43,7 @@ extern std::vector<AutonOption> auton_list;
 /** Define Controllers  */
 // Defined VEX PROS Main Master Controller
 extern pros::Controller masterController;
+extern pros::Controller slaveController;
 
 extern pros::Motor FUCKTEST;
 extern pros::Motor FUCKTEST2;
