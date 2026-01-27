@@ -25,18 +25,29 @@
 void initialize() {
     pros::lcd::initialize(); // initialize brain screen
     create_main_screen();
+
     imu.reset();
+    vertical_encoder.reset();
+    vertical_encoder.reset();
+    drive.drive_imu_calibrate();
+
+    drive.setFieldOriented(false);
     drive.drive_brake_set(pros::E_MOTOR_BRAKE_HOLD);
-    front_right1.set_reversed(true);
-    front_right2.set_reversed(true);
-    back_right1.set_reversed(true);
-    back_right2.set_reversed(true);
+    front_right1.set_reversed(false);
+    front_right2.set_reversed(false);
+    back_right1.set_reversed(false);
+    back_right2.set_reversed(false);
 
     // Left side NOT reversed
-    front_left1.set_reversed(false);
-    front_left2.set_reversed(false);
-    back_left1.set_reversed(false);
-    back_left2.set_reversed(false);
+    front_left1.set_reversed(true);
+    front_left2.set_reversed(true);
+    back_left1.set_reversed(true);
+    back_left2.set_reversed(true);
+    
+    drive.setDrivePID(6.25, 0.55, 0.14);   // Forward/backward
+    drive.setStrafePID(4.0, 0.0, 2.0);  // Strafing
+    drive.setTurnPID(3.0, 0.0, 1.5);    // Turning
+    vertical_encoder.set_reversed(true);
 }
 
 
@@ -71,13 +82,25 @@ void competition_initialize() {}
  * from where it left off.
  */
 void autonomous() {
-    auton_list[current_auton_selection].func();
+    // Keep auton_list synced even when the UI never opened.
+    updateAutonList();
+
+    const std::vector<AutonOption>* list = &auton_list;
+    if (list->empty()) {
+        list = &auton_master_list; // fallback if filtering produced nothing
+    }
+
+    if (list->empty()) {
+        auton_left(); // last-resort default
+        return;
+    }
+
+    int idx = current_auton_selection;
+    if (idx < 0 || idx >= (int)list->size()) idx = 0;
+
+    (*list)[idx].func();
     // Tune PIDs here:
     /**
-    drive.setDrivePID(5.0, 0.0, 2.0);   // Forward/backward
-    drive.setStrafePID(4.0, 0.0, 2.0);  // Strafing
-    drive.setTurnPID(3.0, 0.0, 1.5);    // Turning
-
     drive.drive_brake_set(pros::E_MOTOR_BRAKE_HOLD); // hold motors when stopped
     drive.drive_imu_calibrate(); // reset IMU heading
     

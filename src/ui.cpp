@@ -2,14 +2,155 @@
 #include <vector>
 #include <string>
 #include <cmath>
+#include <cstdio> // Required for snprintf
 
 #include "liblvgl/lvgl.h"
-
 #include "global.hpp"
-#include "autons.hpp"  
+
+// Ensure this matches the global definition in global.cpp
+extern MecanumDrive drive;
+
+// ============================================================================
+//                                 GLOBALS
+// ============================================================================
+
+// Pointers to PID labels (so we can update them dynamically)
+static lv_obj_t* label_kP = nullptr;
+static lv_obj_t* label_kI = nullptr;
+static lv_obj_t* label_kD = nullptr;
+
+// ============================================================================
+//                                PID LOGIC
+// ============================================================================
+
+/**
+ * Updates the text on the PID screen to match the robot's actual values.
+ * Formats: "kP: 5.250" (3 Decimal Places)
+ */
+static void update_pid_labels() {
+    double p, i, d;
+    drive.getDrivePID(p, i, d); // Get values from the global object
+
+    char buffer[32];
+
+    // Helper lambda to round to 3 decimal places for display
+    auto get_fraction = [](double val) {
+        // 1. Multiply by 1000 to move decimals to integers (5.1999 -> 5199.9)
+        // 2. Add 0.5 to round to nearest neighbor (5199.9 + 0.5 -> 5200.4)
+        // 3. Cast to int (5200) and Modulo 1000 to get just the last 3 digits (200)
+        return (int)(std::abs(val) * 1000 + 0.5) % 1000;
+    };
+
+    if (label_kP) {
+        snprintf(buffer, sizeof(buffer), "kP: %d.%03d", (int)p, get_fraction(p));
+        lv_label_set_text(label_kP, buffer);
+    }
+
+    if (label_kI) {
+        snprintf(buffer, sizeof(buffer), "kI: %d.%03d", (int)i, get_fraction(i));
+        lv_label_set_text(label_kI, buffer);
+    }
+
+    if (label_kD) {
+        snprintf(buffer, sizeof(buffer), "kD: %d.%03d", (int)d, get_fraction(d));
+        lv_label_set_text(label_kD, buffer);
+    }
+}
+
+/**
+ * Callback for PID +/- buttons.
+ * IDs: 0=P-, 1=P+, 2=I-, 3=I+, 4=D-, 5=D+
+ */
+static void pid_adjust_cb(lv_event_t* e) {
+    int mode = (int)(uintptr_t)lv_event_get_user_data(e);
+    
+    double p, i, d;
+    drive.getDrivePID(p, i, d); // Get LATEST values
+
+    // Adjust values
+    switch(mode) {
+        case 0: p -= 0.1; break;   // P -
+        case 1: p += 0.1; break;   // P +
+        case 2: i -= 0.01; break;  // I - (Smaller steps for I)
+        case 3: i += 0.01; break;  // I +
+        case 4: d -= 0.1; break;   // D -
+        case 5: d += 0.1; break;   // D +
+    }
+
+    // Safety checks (cannot be negative)
+    if(p < 0) p = 0;
+    if(i < 0) i = 0;
+    if(d < 0) d = 0;
+
+    drive.setDrivePID(p, i, d); // UPDATE values in drive object
+    update_pid_labels();        // REFRESH screen
+}
+
+/**
+ * Helper to create a single PID row: [Button -] [Label] [Button +]
+ */
+void create_pid_row(lv_obj_t* parent, lv_obj_t** label_ptr, int id_minus, int id_plus, int y_pos) {
+    // 1. The Value Label (Centered)
+    *label_ptr = lv_label_create(parent);
+    lv_obj_align(*label_ptr, LV_ALIGN_TOP_MID, 0, y_pos + 12); // Vertically centered with buttons
+    
+    // 2. Minus Button (Left)
+    lv_obj_t* btn_minus = lv_button_create(parent);
+    lv_obj_set_size(btn_minus, 50, 40); // Wider button for easier touch
+    lv_obj_align(btn_minus, LV_ALIGN_TOP_MID, -90, y_pos);
+    lv_obj_add_event_cb(btn_minus, pid_adjust_cb, LV_EVENT_CLICKED, (void*)(uintptr_t)id_minus);
+    
+    lv_obj_t* lbl_m = lv_label_create(btn_minus);
+    lv_label_set_text(lbl_m, "-");
+    lv_obj_center(lbl_m);
+
+    // 3. Plus Button (Right)
+    lv_obj_t* btn_plus = lv_button_create(parent);
+    lv_obj_set_size(btn_plus, 50, 40);
+    lv_obj_align(btn_plus, LV_ALIGN_TOP_MID, 90, y_pos);
+    lv_obj_add_event_cb(btn_plus, pid_adjust_cb, LV_EVENT_CLICKED, (void*)(uintptr_t)id_plus);
+
+    lv_obj_t* lbl_p = lv_label_create(btn_plus);
+    lv_label_set_text(lbl_p, "+");
+    lv_obj_center(lbl_p);
+}
+
+void create_pid_screen() {
+    lv_obj_t* screen = lv_obj_create(nullptr);
+    lv_screen_load(screen);
+
+    // Title
+    lv_obj_t* title = lv_label_create(screen);
+    lv_label_set_text(title, "PID Tuning (Drive)");
+    lv_obj_align(title, LV_ALIGN_TOP_MID, 0, 10);
+
+    // Create Rows (P at 50, I at 100, D at 150)
+    create_pid_row(screen, &label_kP, 0, 1, 50);
+    create_pid_row(screen, &label_kI, 2, 3, 100);
+    create_pid_row(screen, &label_kD, 4, 5, 150);
+
+    // Refresh labels immediately
+    update_pid_labels();
+
+    // Back Button
+    lv_obj_t* back = lv_button_create(screen);
+    lv_obj_set_size(back, 100, 40);
+    lv_obj_align(back, LV_ALIGN_BOTTOM_MID, 0, -10);
+    
+    lv_obj_t* blabel = lv_label_create(back);
+    lv_label_set_text(blabel, "Back");
+    lv_obj_center(blabel);
+
+    lv_obj_add_event_cb(back, [](lv_event_t* e) { 
+        create_main_screen(); 
+    }, LV_EVENT_CLICKED, nullptr);
+}
+
+// ============================================================================
+//                               AUTON LOGIC
+// ============================================================================
 
 void updateAutonList() {
-    // 1. Save the name of the currently selected auton (if the list isn't empty)
     std::string last_selected_name = "";
     if (!auton_list.empty() && current_auton_selection >= 0 && current_auton_selection < auton_list.size()) {
         last_selected_name = auton_list[current_auton_selection].name;
@@ -17,22 +158,18 @@ void updateAutonList() {
 
     auton_list.clear();
 
-    // 2. Rebuild the list based on color
     for (auto &a : auton_master_list) {
         if (a.side == 2) {
-            auton_list.push_back(a); // both sides
+            auton_list.push_back(a); 
         } else if (a.side == 1 && autonColor == 1) {
-            auton_list.push_back(a); // blue
+            auton_list.push_back(a); 
         } else if (a.side == 0 && autonColor == -1) {
-            auton_list.push_back(a); // red
+            auton_list.push_back(a); 
         }
     }
 
-    // 3. Try to find the previous auton in the new list
-    current_auton_selection = 0; // Default to 0 (first item) just in case
-    
+    current_auton_selection = 0; 
     for (size_t i = 0; i < auton_list.size(); i++) {
-        // If we find the name we saved earlier, set the selection to this index
         if (last_selected_name == auton_list[i].name) {
             current_auton_selection = i;
             break; 
@@ -40,15 +177,13 @@ void updateAutonList() {
     }
 }
 
-
-// clear screen
-void clear_screen(lv_obj_t* screen) {
-    lv_obj_clean(screen);
-}
+// ============================================================================
+//                            GENERAL UI HELPERS
+// ============================================================================
 
 lv_obj_t* create_button(lv_obj_t* parent, const char* text, lv_align_t align, int x_ofs, int y_ofs, void (*callback)()) {
     lv_obj_t* btn = lv_button_create(parent);
-    lv_obj_set_size(btn, 200, 80);
+    lv_obj_set_size(btn, 180, 70); // Standardized size
     lv_obj_set_align(btn, align);
     lv_obj_set_pos(btn, x_ofs, y_ofs);
 
@@ -64,65 +199,58 @@ lv_obj_t* create_button(lv_obj_t* parent, const char* text, lv_align_t align, in
     return btn;
 }
 
+// ============================================================================
+//                                MAIN SCREEN
+// ============================================================================
 
 void create_main_screen() {
     lv_obj_t* screen = lv_obj_create(nullptr);
     lv_screen_load(screen);
 
-    const int btn_w = 180, btn_h = 80;
     lv_obj_set_style_bg_color(screen, lv_color_hex(0x222244), LV_PART_MAIN);
     lv_obj_set_style_bg_opa(screen, LV_OPA_COVER, LV_PART_MAIN);
 
-    // --- NEW LOGIC: Generate Button Text ---
+    // Generate Auton Button Text
     std::string autonInfo = "Auton Select\n";
-    
     if (auton_list.empty()) {
         autonInfo += "(None)";
     } else {
-        // 1. Add Color Side
         if (autonColor == 1) autonInfo += "[BLUE] ";
         else if (autonColor == -1) autonInfo += "[RED] ";
         else autonInfo += "[?] ";
 
-        // 2. Add Auton Name (Safety Check First)
         if (current_auton_selection >= 0 && current_auton_selection < auton_list.size()) {
             autonInfo += auton_list[current_auton_selection].name;
         } else {
             autonInfo += "Unknown";
         }
     }
-    // ---------------------------------------
 
-    // Auton Select (Top Left) - Now uses the custom text!
-    lv_obj_t* btn_auton = create_button(screen, autonInfo.c_str(),
-    LV_ALIGN_TOP_LEFT, 20, 20, create_auton_color_screen);
-    lv_obj_set_size(btn_auton, btn_w, btn_h);
+    // Top Left: Auton Select
+    create_button(screen, autonInfo.c_str(), LV_ALIGN_TOP_LEFT, 20, 20, create_auton_color_screen);
 
-    // Profiles (Top Right)
-    lv_obj_t* btn_profiles = create_button(screen, "Profiles",
-    LV_ALIGN_TOP_RIGHT, -20, 20, create_profiles_screen);
-    lv_obj_set_size(btn_profiles, btn_w, btn_h);
+    // Top Right: Profiles
+    create_button(screen, "Profiles", LV_ALIGN_TOP_RIGHT, -20, 20, create_profiles_screen);
 
-    // Odometry (Bottom Left)
-    lv_obj_t* btn_odom = create_button(screen, "Odometry",
-        LV_ALIGN_BOTTOM_LEFT, 20, -20, create_odometry_screen);
-    lv_obj_set_size(btn_odom, btn_w, btn_h);
+    // Bottom Left: Odometry
+    create_button(screen, "Odometry", LV_ALIGN_BOTTOM_LEFT, 20, -20, create_odometry_screen);
 
-    // PID Tuning (Bottom Right)
-    lv_obj_t* btn_pid = create_button(screen, "PID Tuning",
-        LV_ALIGN_BOTTOM_RIGHT, -20, -20, create_pid_screen);
-    lv_obj_set_size(btn_pid, btn_w, btn_h);
+    // Bottom Right: PID Tuning
+    create_button(screen, "PID Tuning", LV_ALIGN_BOTTOM_RIGHT, -20, -20, create_pid_screen);
 }
 
+// ============================================================================
+//                            AUTON SELECTION
+// ============================================================================
 
 void auton_red_select() {
-    autonColor = -1;   // red
-    updateAutonList(); // filter the list
+    autonColor = -1; 
+    updateAutonList(); 
     create_auton_screen();
 }
 
 void auton_blue_select() {
-    autonColor = 1;    // blue
+    autonColor = 1; 
     updateAutonList();
     create_auton_screen();
 }
@@ -134,33 +262,20 @@ void create_auton_color_screen() {
     lv_obj_set_style_bg_color(screen, lv_color_hex(0x223355), LV_PART_MAIN);
     lv_obj_set_style_bg_opa(screen, LV_OPA_COVER, LV_PART_MAIN);
 
-    // Title
     lv_obj_t* title = lv_label_create(screen);
-    lv_label_set_text(title, "Choose Auton Side");
-    lv_obj_set_style_text_font(title, &lv_font_montserrat_30, LV_PART_MAIN);
-    lv_obj_set_align(title, LV_ALIGN_TOP_MID);
-    lv_obj_set_y(title, 10);
+    lv_label_set_text(title, "Choose Side");
+    lv_obj_align(title, LV_ALIGN_TOP_MID, 0, 10);
 
-    // RED Button
-    lv_obj_t* btnRed = create_button(screen, "RED AUTONS",
-        LV_ALIGN_LEFT_MID, 30, 0, auton_red_select);
-    
-    // BLUE Button
-    lv_obj_t* btnBlue = create_button(screen, "BLUE AUTONS",
-        LV_ALIGN_RIGHT_MID, -30, 0, auton_blue_select);
+    lv_obj_t* btnRed = create_button(screen, "RED AUTONS", LV_ALIGN_LEFT_MID, 30, 0, auton_red_select);
+    lv_obj_t* btnBlue = create_button(screen, "BLUE AUTONS", LV_ALIGN_RIGHT_MID, -30, 0, auton_blue_select);
 
-    // --- NEW LOGIC: Highlight Current Selection ---
-    if (autonColor == -1) { // If Red is active
-        lv_obj_set_style_border_color(btnRed, lv_color_hex(0xFFFF00), 0); // Yellow border
-        lv_obj_set_style_border_width(btnRed, 4, 0);
-    } 
-    else if (autonColor == 1) { // If Blue is active
-        lv_obj_set_style_border_color(btnBlue, lv_color_hex(0xFFFF00), 0); // Yellow border
-        lv_obj_set_style_border_width(btnBlue, 4, 0);
+    // Highlight Current Selection
+    lv_obj_t* activeBtn = (autonColor == -1) ? btnRed : (autonColor == 1) ? btnBlue : nullptr;
+    if (activeBtn) {
+        lv_obj_set_style_border_color(activeBtn, lv_color_hex(0xFFFF00), 0);
+        lv_obj_set_style_border_width(activeBtn, 4, 0);
     }
-    // ----------------------------------------------
 
-    // Back button
     lv_obj_t* back = lv_button_create(screen);
     lv_obj_set_size(back, 120, 50);
     lv_obj_set_align(back, LV_ALIGN_BOTTOM_MID);
@@ -170,36 +285,9 @@ void create_auton_color_screen() {
     lv_label_set_text(blabel, "Back");
     lv_obj_center(blabel);
 
-    lv_obj_add_event_cb(back, [](lv_event_t* e) {
-        create_main_screen();
-    }, LV_EVENT_CLICKED, nullptr);
+    lv_obj_add_event_cb(back, [](lv_event_t* e) { create_main_screen(); }, LV_EVENT_CLICKED, nullptr);
 }
 
-
-//  Static Callbacks 
-// Left button callback
-static void left_btn_event_cb(lv_event_t* e) {
-    lv_obj_t* label = (lv_obj_t*)lv_event_get_user_data(e);
-    current_auton_selection--;
-    if (current_auton_selection < 0)
-        current_auton_selection = auton_list.size() - 1;
-    lv_label_set_text(label, auton_list[current_auton_selection].name);
-}
-
-// Right button callback
-static void right_btn_event_cb(lv_event_t* e) {
-    lv_obj_t* label = (lv_obj_t*)lv_event_get_user_data(e);
-    current_auton_selection++;
-    if (current_auton_selection >= (int)auton_list.size())
-        current_auton_selection = 0;
-    lv_label_set_text(label, auton_list[current_auton_selection].name);
-}
-
-static void back_btn_event_cb(lv_event_t* e) {
-    create_main_screen();
-}
-
-// Auton Selector Screen 
 void create_auton_screen() {
     lv_obj_t* screen = lv_obj_create(nullptr);
     lv_screen_load(screen);
@@ -209,109 +297,89 @@ void create_auton_screen() {
 
     // Title
     lv_obj_t* title = lv_label_create(screen);
-    lv_label_set_text(title, "Auton Selector");
-    lv_obj_set_style_text_font(title, &lv_font_montserrat_30, LV_PART_MAIN);
-    lv_obj_set_align(title, LV_ALIGN_TOP_MID);
-    lv_obj_set_y(title, 10);
+    lv_label_set_text(title, "Select Auton Routine");
+    lv_obj_align(title, LV_ALIGN_TOP_MID, 0, 10);
 
-    // Auton Name
+    // Data Labels
     lv_obj_t* name_label = lv_label_create(screen);
     lv_label_set_text(name_label, auton_list[current_auton_selection].name);
-    lv_obj_set_style_text_font(name_label, &lv_font_montserrat_30, LV_PART_MAIN);
-    lv_obj_set_align(name_label, LV_ALIGN_CENTER);
-    lv_obj_set_y(name_label, -60);
+    lv_obj_align(name_label, LV_ALIGN_CENTER, 0, -50);
 
-    // Auton Description
     lv_obj_t* desc_label = lv_label_create(screen);
     lv_label_set_text(desc_label, auton_list[current_auton_selection].description);
-    lv_obj_set_style_text_font(desc_label, &lv_font_montserrat_18, LV_PART_MAIN);
     lv_label_set_long_mode(desc_label, LV_LABEL_LONG_WRAP);
-    lv_obj_set_width(desc_label, 200); // wrap text nicely
-    lv_obj_set_align(desc_label, LV_ALIGN_CENTER);
-    lv_obj_set_y(desc_label, 0);
+    lv_obj_set_width(desc_label, 200); 
+    lv_obj_set_style_text_align(desc_label, LV_TEXT_ALIGN_CENTER, 0);
+    lv_obj_align(desc_label, LV_ALIGN_CENTER, 0, 10);
 
-    // Left button
+    // Arrows
+    auto create_arrow = [&](const char* symbol, lv_align_t align, int d) {
+        lv_obj_t* btn = lv_button_create(screen);
+        lv_obj_set_size(btn, 60, 100);
+        lv_obj_set_align(btn, align);
+        lv_obj_set_style_bg_opa(btn, LV_OPA_TRANSP, 0);
+        
+        lv_obj_t* l = lv_label_create(btn);
+        lv_label_set_text(l, symbol);
+        lv_obj_center(l);
+        
+        lv_obj_add_event_cb(btn, [](lv_event_t* e) {
+            lv_obj_t** labels = (lv_obj_t**)lv_event_get_user_data(e);
+            // d is hidden in the event user data pointer math (hacky but standard for simple C callbacks)
+            // But here we need to capture 'd'. Since this is a lambda, we can't easily pass 'd' via user_data without a struct.
+            // Simplified: We will just inline the logic in a normal loop or split functions.
+            // For safety, let's revert to the robust style used in profiles.
+        }, LV_EVENT_CLICKED, nullptr);
+        return btn;
+    };
+
+    // --- Arrow Logic Inline ---
     lv_obj_t* left = lv_button_create(screen);
-    lv_obj_set_size(left, 100, 200);
-    lv_obj_set_align(left, LV_ALIGN_LEFT_MID);
-    lv_obj_set_style_bg_opa(left, LV_OPA_TRANSP, LV_PART_MAIN);
-
+    lv_obj_set_size(left, 80, 150);
+    lv_obj_align(left, LV_ALIGN_LEFT_MID, 10, 0);
+    lv_obj_set_style_bg_opa(left, LV_OPA_TRANSP, 0);
+    lv_obj_t* l_lbl = lv_label_create(left);
+    lv_label_set_text(l_lbl, LV_SYMBOL_LEFT);
+    lv_obj_center(l_lbl);
+    
     lv_obj_add_event_cb(left, [](lv_event_t* e) {
-        lv_obj_t** labels = (lv_obj_t**)lv_event_get_user_data(e);
-
-        // update selection
-        current_auton_selection--;
-        if (current_auton_selection < 0)
-            current_auton_selection = auton_list.size() - 1;
-
-        // update both labels
-        lv_label_set_text(labels[0], auton_list[current_auton_selection].name);
-        lv_label_set_text(labels[1], auton_list[current_auton_selection].description);
+         lv_obj_t** labels = (lv_obj_t**)lv_event_get_user_data(e);
+         current_auton_selection--;
+         if (current_auton_selection < 0) current_auton_selection = auton_list.size() - 1;
+         lv_label_set_text(labels[0], auton_list[current_auton_selection].name);
+         lv_label_set_text(labels[1], auton_list[current_auton_selection].description);
     }, LV_EVENT_CLICKED, new lv_obj_t*[2]{name_label, desc_label});
 
-    // Left arrow
-    lv_obj_t* left_arrow = lv_label_create(left);
-    lv_label_set_text(left_arrow, LV_SYMBOL_LEFT);
-    lv_obj_center(left_arrow);
-
-    // Right button
     lv_obj_t* right = lv_button_create(screen);
-    lv_obj_set_size(right, 100, 200);
-    lv_obj_set_align(right, LV_ALIGN_RIGHT_MID);
-    lv_obj_set_style_bg_opa(right, LV_OPA_TRANSP, LV_PART_MAIN);
+    lv_obj_set_size(right, 80, 150);
+    lv_obj_align(right, LV_ALIGN_RIGHT_MID, -10, 0);
+    lv_obj_set_style_bg_opa(right, LV_OPA_TRANSP, 0);
+    lv_obj_t* r_lbl = lv_label_create(right);
+    lv_label_set_text(r_lbl, LV_SYMBOL_RIGHT);
+    lv_obj_center(r_lbl);
 
     lv_obj_add_event_cb(right, [](lv_event_t* e) {
-        lv_obj_t** labels = (lv_obj_t**)lv_event_get_user_data(e);
-
-        current_auton_selection++;
-        if (current_auton_selection >= (int)auton_list.size())
-            current_auton_selection = 0;
-
-        lv_label_set_text(labels[0], auton_list[current_auton_selection].name);
-        lv_label_set_text(labels[1], auton_list[current_auton_selection].description);
+         lv_obj_t** labels = (lv_obj_t**)lv_event_get_user_data(e);
+         current_auton_selection++;
+         if (current_auton_selection >= (int)auton_list.size()) current_auton_selection = 0;
+         lv_label_set_text(labels[0], auton_list[current_auton_selection].name);
+         lv_label_set_text(labels[1], auton_list[current_auton_selection].description);
     }, LV_EVENT_CLICKED, new lv_obj_t*[2]{name_label, desc_label});
 
-    // Right arrow
-    lv_obj_t* right_arrow = lv_label_create(right);
-    lv_label_set_text(right_arrow, LV_SYMBOL_RIGHT);
-    lv_obj_center(right_arrow);
-
-    // Back button
+    // Back
     lv_obj_t* back = lv_button_create(screen);
     lv_obj_set_size(back, 100, 50);
-    lv_obj_set_align(back, LV_ALIGN_BOTTOM_MID);
-    lv_obj_set_y(back, -10);
-
+    lv_obj_align(back, LV_ALIGN_BOTTOM_MID, 0, -10);
     lv_obj_t* blabel = lv_label_create(back);
     lv_label_set_text(blabel, "Back");
     lv_obj_center(blabel);
-
-    lv_obj_add_event_cb(back, back_btn_event_cb, LV_EVENT_CLICKED, nullptr);
+    lv_obj_add_event_cb(back, [](lv_event_t* e){ create_main_screen(); }, LV_EVENT_CLICKED, nullptr);
 }
 
-//  Static Callbacks (Profiles) 
-static void left_profile_event_cb(lv_event_t* e) {
-    lv_obj_t* label = (lv_obj_t*)lv_event_get_user_data(e);
-    current_profile_selection--;
-    if (current_profile_selection < 0)
-        current_profile_selection = profile_list.size() - 1;
-    lv_label_set_text(label, profile_list[current_profile_selection].name);
-}
+// ============================================================================
+//                            PROFILES SCREEN
+// ============================================================================
 
-static void right_profile_event_cb(lv_event_t* e) {
-    lv_obj_t* label = (lv_obj_t*)lv_event_get_user_data(e);
-    current_profile_selection++;
-    if (current_profile_selection >= (int)profile_list.size())
-        current_profile_selection = 0;
-    lv_label_set_text(label, profile_list[current_profile_selection].name);
-}
-
-static void back_profile_event_cb(lv_event_t* e) {
-    create_main_screen();
-}
-
-//  Profiles Screen 
-//  Profiles Screen 
 void create_profiles_screen() {
     lv_obj_t* screen = lv_obj_create(nullptr);
     lv_screen_load(screen);
@@ -319,127 +387,107 @@ void create_profiles_screen() {
     lv_obj_set_style_bg_color(screen, lv_color_hex(0x334466), LV_PART_MAIN);
     lv_obj_set_style_bg_opa(screen, LV_OPA_COVER, LV_PART_MAIN);
 
-    // Title
     lv_obj_t* title = lv_label_create(screen);
     lv_label_set_text(title, "Driver Profiles");
-    lv_obj_set_style_text_font(title, &lv_font_montserrat_30, LV_PART_MAIN);
-    lv_obj_set_align(title, LV_ALIGN_TOP_MID);
-    lv_obj_set_y(title, 10);
+    lv_obj_align(title, LV_ALIGN_TOP_MID, 0, 10);
 
-    // Current Profile Name
     lv_obj_t* name_label = lv_label_create(screen);
-    lv_label_set_text_fmt(name_label, "%s", profile_list[current_profile_selection].name);
-    lv_obj_set_style_text_font(name_label, &lv_font_montserrat_30, LV_PART_MAIN);
-    lv_obj_set_align(name_label, LV_ALIGN_CENTER);
-    lv_obj_set_y(name_label, -60);
+    lv_label_set_text(name_label, profile_list[current_profile_selection].name);
+    lv_obj_align(name_label, LV_ALIGN_CENTER, 0, -50);
 
-    // Profile Description
     lv_obj_t* desc_label = lv_label_create(screen);
     lv_label_set_text(desc_label, profile_list[current_profile_selection].description);
-    lv_obj_set_style_text_font(desc_label, &lv_font_montserrat_18, LV_PART_MAIN);
     lv_label_set_long_mode(desc_label, LV_LABEL_LONG_WRAP);
-    lv_obj_set_width(desc_label, 200); // wrap text nicely
-    lv_obj_set_align(desc_label, LV_ALIGN_CENTER);
-    lv_obj_set_y(desc_label, 10);
+    lv_obj_set_width(desc_label, 200);
+    lv_obj_set_style_text_align(desc_label, LV_TEXT_ALIGN_CENTER, 0);
+    lv_obj_align(desc_label, LV_ALIGN_CENTER, 0, 10);
 
-    // Left Tap Zone
+    // Left Arrow
     lv_obj_t* left = lv_button_create(screen);
-    lv_obj_set_size(left, 100, 200);
-    lv_obj_set_align(left, LV_ALIGN_LEFT_MID);
-    lv_obj_set_style_bg_opa(left, LV_OPA_TRANSP, LV_PART_MAIN);
+    lv_obj_set_size(left, 80, 150);
+    lv_obj_align(left, LV_ALIGN_LEFT_MID, 10, 0);
+    lv_obj_set_style_bg_opa(left, LV_OPA_TRANSP, 0);
+    lv_obj_t* l_lbl = lv_label_create(left);
+    lv_label_set_text(l_lbl, LV_SYMBOL_LEFT);
+    lv_obj_center(l_lbl);
+    
     lv_obj_add_event_cb(left, [](lv_event_t* e) {
         lv_obj_t** labels = (lv_obj_t**)lv_event_get_user_data(e);
-
         current_profile_selection--;
-        if (current_profile_selection < 0)
-            current_profile_selection = profile_list.size() - 1;
-
+        if (current_profile_selection < 0) current_profile_selection = profile_list.size() - 1;
         lv_label_set_text(labels[0], profile_list[current_profile_selection].name);
         lv_label_set_text(labels[1], profile_list[current_profile_selection].description);
     }, LV_EVENT_CLICKED, new lv_obj_t*[2]{name_label, desc_label});
 
-    // Left arrow
-    lv_obj_t* left_arrow = lv_label_create(left);
-    lv_label_set_text(left_arrow, LV_SYMBOL_LEFT);
-    lv_obj_center(left_arrow);
-
-    // Right Tap Zone
+    // Right Arrow
     lv_obj_t* right = lv_button_create(screen);
-    lv_obj_set_size(right, 100, 200);
-    lv_obj_set_align(right, LV_ALIGN_RIGHT_MID);
-    lv_obj_set_style_bg_opa(right, LV_OPA_TRANSP, LV_PART_MAIN);
+    lv_obj_set_size(right, 80, 150);
+    lv_obj_align(right, LV_ALIGN_RIGHT_MID, -10, 0);
+    lv_obj_set_style_bg_opa(right, LV_OPA_TRANSP, 0);
+    lv_obj_t* r_lbl = lv_label_create(right);
+    lv_label_set_text(r_lbl, LV_SYMBOL_RIGHT);
+    lv_obj_center(r_lbl);
+
     lv_obj_add_event_cb(right, [](lv_event_t* e) {
         lv_obj_t** labels = (lv_obj_t**)lv_event_get_user_data(e);
-
         current_profile_selection++;
-        if (current_profile_selection >= (int)profile_list.size())
-            current_profile_selection = 0;
-
+        if (current_profile_selection >= (int)profile_list.size()) current_profile_selection = 0;
         lv_label_set_text(labels[0], profile_list[current_profile_selection].name);
         lv_label_set_text(labels[1], profile_list[current_profile_selection].description);
     }, LV_EVENT_CLICKED, new lv_obj_t*[2]{name_label, desc_label});
-
-    // Right arrow
-    lv_obj_t* right_arrow = lv_label_create(right);
-    lv_label_set_text(right_arrow, LV_SYMBOL_RIGHT);
-    lv_obj_center(right_arrow);
 
     // Back Button
     lv_obj_t* back = lv_button_create(screen);
     lv_obj_set_size(back, 100, 50);
-    lv_obj_set_align(back, LV_ALIGN_BOTTOM_MID);
-    lv_obj_set_y(back, -10);
-
+    lv_obj_align(back, LV_ALIGN_BOTTOM_MID, 0, -10);
     lv_obj_t* blabel = lv_label_create(back);
     lv_label_set_text(blabel, "Back");
     lv_obj_center(blabel);
-
-    lv_obj_add_event_cb(back, back_profile_event_cb, LV_EVENT_CLICKED, nullptr);
+    lv_obj_add_event_cb(back, [](lv_event_t* e){ create_main_screen(); }, LV_EVENT_CLICKED, nullptr);
 }
 
+// ============================================================================
+//                            ODOMETRY SCREEN
+// ============================================================================
 
-//  Odometry Screen 
+static void update_odom_label(lv_obj_t* label) {
+    drive.updateOdometry();
+    const auto& p = drive.getPose();
+    double heading = imu.get_heading();
+
+    char buf[160];
+    std::snprintf(
+        buf, sizeof(buf),
+        "X: %.2f\nY: %.2f\nHead: %.1f\nVEnc: %.1f\nHEnc: %.1f",
+        p.x, p.y, heading,
+        vertical_encoder.get_position(),
+        horizontal_encoder.get_position()
+    );
+    lv_label_set_text(label, buf);
+}
+
+static void odom_update_timer(lv_timer_t* timer) {
+    lv_obj_t* label = static_cast<lv_obj_t*>(timer->user_data);
+    update_odom_label(label);
+}
+
 void create_odometry_screen() {
     lv_obj_t* screen = lv_obj_create(nullptr);
     lv_screen_load(screen);
 
-    double x = vertical_encoder.get_position();
-    double y = horizontal_encoder.get_position();
-    double heading = imu.get_heading();
-
     lv_obj_t* label = lv_label_create(screen);
-    lv_label_set_text_fmt(label, "X: %.1f\nY: %.1f\nHeading: %.1f", x, y, heading);
-    lv_obj_set_align(label, LV_ALIGN_CENTER);
+    lv_obj_set_style_text_font(label, &lv_font_montserrat_30, 0);
+    lv_obj_align(label, LV_ALIGN_CENTER, 0, -20);
+
+    // Initialize and update label continuously while this screen is active.
+    update_odom_label(label);
+    lv_timer_create(odom_update_timer, 100, label);
 
     lv_obj_t* back = lv_button_create(screen);
     lv_obj_set_size(back, 100, 50);
-    lv_obj_set_align(back, LV_ALIGN_BOTTOM_MID);
-    lv_obj_set_y(back, -10);
-
+    lv_obj_align(back, LV_ALIGN_BOTTOM_MID, 0, -10);
     lv_obj_t* blabel = lv_label_create(back);
     lv_label_set_text(blabel, "Back");
     lv_obj_center(blabel);
-
-    lv_obj_add_event(back, [](lv_event_t* e) { create_main_screen(); }, LV_EVENT_CLICKED, nullptr);
-}
-
-//  PID Screen 
-void create_pid_screen() {
-    lv_obj_t* screen = lv_obj_create(nullptr);
-    lv_screen_load(screen);
-
-    lv_obj_t* label = lv_label_create(screen);
-    lv_label_set_text(label, "PID tuning TBD");
-    lv_obj_set_align(label, LV_ALIGN_CENTER);
-
-    lv_obj_t* back = lv_button_create(screen);
-    lv_obj_set_size(back, 100, 50);
-    lv_obj_set_align(back, LV_ALIGN_BOTTOM_MID);
-    lv_obj_set_y(back, -10);
-
-    lv_obj_t* blabel = lv_label_create(back);
-    lv_label_set_text(blabel, "Back");
-    lv_obj_center(blabel);
-
-    lv_obj_add_event(back, [](lv_event_t* e) { create_main_screen(); }, LV_EVENT_CLICKED, nullptr);
+    lv_obj_add_event_cb(back, [](lv_event_t* e){ create_main_screen(); }, LV_EVENT_CLICKED, nullptr);
 }

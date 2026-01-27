@@ -10,7 +10,7 @@
 
 // Actual autonomous implementations
 void auton_left() {
-    FUCKTEST.move(20);
+    drive.moveStraight(12, 125);
 }
 
 void auton_right() {

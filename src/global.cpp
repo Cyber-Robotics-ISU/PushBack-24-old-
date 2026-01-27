@@ -1,7 +1,5 @@
 #include "global.hpp"
-#include "mecanum_drive.hpp"
-#include "autons.hpp"  
-#include "driver_profile.hpp"
+
 
 /** Define Variables  */
 int current_profile_selection = 0; // Currently selected profile index
@@ -20,22 +18,22 @@ int current_auton_selection = 0;
 std::vector<AutonOption> auton_master_list = {
     { "EXAMPLE",
       "1234567890123456789\n1234567890123456789\n1234567890123456789\n1234567890123456789\n1234567890123456789",
-      auton_skills,
+      auton_left,
       2 }, // blue
 
     { "RED",
       "Rush the middle mogo. Scores 2 rings.\nFast and consistent.",
-      auton_left,
+      auton_right,
       0 }, // red
 
     { "BLUE",
       "Blue version of Mogo Rush.\nScores 2 rings.",
-      auton_right,
+      auton_left,
       1 }, // blue
 
     { "Skills Auton",
       "Runs full skills path.\nWorks on red or blue.",
-      auton_skills,
+      auton_left,
       2 }, // both
 };
 
@@ -95,9 +93,9 @@ MecanumDrive drive(
     &imu,
     &vertical_encoder,
     &horizontal_encoder,
-    2.75, // Wheel Diameter (Double check this! 2.0 seems small for Mecanum, usually 3.25 or 4)
+    2, // Wheel Diameter (Double check this! 2.0 seems small for Mecanum, usually 3.25 or 4)
     13.5, // Track Width
-    13.0, // Track Base
-    .8   // Gear Ratio (1.0 for direct drive blue cart)
+    12.5, // Track Base
+    1   // Gear Ratio (1.0 for direct drive blue cart)
 );
 

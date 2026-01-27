@@ -277,11 +277,15 @@ void default_profile_init() {
 }
 
 void default_profile_loop() {
-    double strafe = masterController.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_X); // Left/Right
+    double strafe = -masterController.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_X); // Left/Right
     double straight = masterController.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y); // Forward/Back
     double turn = masterController.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X); // Turn
- 
-    drive.drive(strafe, straight, turn);
+
+    auto cubic = [](double v) {
+        return (v * v * v) / (127.0 * 127.0);
+    };
+    drive.drive(cubic(strafe), cubic(straight), cubic(turn));
+    //drive.drive(strafe, straight, turn);
 
     if (masterController.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_X)) {
         toggleMegaIntake = !toggleMegaIntake;
@@ -298,6 +302,7 @@ void default_profile_loop() {
             toggleBottomBasket2TopBasket = false;
         }
     }
+    /**
     if (masterController.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1)) {
         topBasketScoreTop(); 
     }
@@ -323,6 +328,11 @@ void default_profile_loop() {
     if (masterController.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_LEFT)) {
         BottomBasket2TopBasket(); 
     }
+    */
+    
+    if (masterController.get_digital(pros::E_CONTROLLER_DIGITAL_R1)) {
+        auton_left(); 
+    }
     pros::delay(10);
 }
 
@@ -339,5 +349,4 @@ void unknown_profile_init() {
 }
 
 void unknown_profile_loop() {
-    
 }
