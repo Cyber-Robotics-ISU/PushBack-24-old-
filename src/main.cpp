@@ -44,9 +44,9 @@ void initialize() {
     back_left1.set_reversed(true);
     back_left2.set_reversed(true);
     
-    drive.setDrivePID(6.25, 0.55, 0.14);   // Forward/backward
+    drive.setDrivePID(6.25, 0.55, 0.14);   // Forward/backward max speed 125/127
     drive.setStrafePID(4.0, 0.0, 2.0);  // Strafing
-    drive.setTurnPID(3.0, 0.0, 1.5);    // Turning
+    drive.setTurnPID(5, 1.15, 0.5);    // Turning // max speed 100/127
     vertical_encoder.set_reversed(true);
 }
 

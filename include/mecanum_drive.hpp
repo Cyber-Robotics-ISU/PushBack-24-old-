@@ -228,12 +228,21 @@ public:
         turnPID.reset();
 
         double target = imu->get_heading() + targetDegrees;
+        uint32_t startTime = pros::millis();
+        uint32_t settledTime = 0;
 
         while (true) {
             double current = imu->get_heading();
             double error = std::remainder(target - current, 360.0);
 
-            if (std::fabs(error) < 1.0) break;
+            if (std::fabs(error) < 1.0) {
+                if (settledTime == 0) settledTime = pros::millis();
+                if (pros::millis() - settledTime >= 350) break;
+            } else {
+                settledTime = 0;
+            }
+
+            if (pros::millis() - startTime >= 9000) break;
 
             double power = turnPID.calculate(0, -error, maxPower);
             drive(0, 0, power, maxPower);

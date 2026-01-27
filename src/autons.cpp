@@ -10,7 +10,7 @@
 
 // Actual autonomous implementations
 void auton_left() {
-    drive.moveStraight(12, 125);
+    drive.turnPIDAngle(90, 100);
 }
 
 void auton_right() {
