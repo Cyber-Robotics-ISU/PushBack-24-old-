@@ -37,6 +37,9 @@ std::vector<AutonOption> auton_master_list = {
       2 }, // both
 };
 
+pros::adi::Pneumatics scrappePneumatics(1, false);
+pros::adi::Pneumatics stopperPneumatics(2, false);
+
 // Starts empty — will be filled based on autonColor
 std::vector<AutonOption> auton_list = {};
 

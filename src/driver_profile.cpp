@@ -29,7 +29,8 @@ void MegaIntakeTask(void*) {
     while (true) {
 
         if (toggleTopBasket2Top) {
-            intakeMotorB.move(-120);
+            intakeMotorA.move(100);
+            intakeMotorB.move(-100);
             intakeMotorC.move(120);
             intakeMotorD.move(120);
             intakeMotorE.move(120);
@@ -302,7 +303,7 @@ void default_profile_loop() {
             toggleBottomBasket2TopBasket = false;
         }
     }
-    /**
+    
     if (masterController.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1)) {
         topBasketScoreTop(); 
     }
@@ -328,11 +329,15 @@ void default_profile_loop() {
     if (masterController.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_LEFT)) {
         BottomBasket2TopBasket(); 
     }
-    */
-    
-    if (masterController.get_digital(pros::E_CONTROLLER_DIGITAL_R1)) {
-        auton_left(); 
+    //
+    if (masterController.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_Y)) {
+        stopperPneumatics.toggle(); 
     }
+
+    if (masterController.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_B)) {
+         scrappePneumatics.toggle();
+    }
+    
     pros::delay(10);
 }
 

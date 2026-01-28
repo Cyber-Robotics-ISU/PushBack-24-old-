@@ -38,7 +38,8 @@ extern std::vector<AutonOption> auton_master_list;
 // filtered list (only shows blue/red/both)
 extern std::vector<AutonOption> auton_list;
 
-
+extern pros::adi::Pneumatics scrappePneumatics;
+extern pros::adi::Pneumatics stopperPneumatics;
 
 /** Define Controllers  */
 // Defined VEX PROS Main Master Controller
