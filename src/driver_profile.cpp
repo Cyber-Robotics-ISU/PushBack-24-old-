@@ -25,6 +25,17 @@ bool toggleBottomBasket2Top = false;
 
 bool toggleBottomBasket2TopBasket = false;
 
+enum class IntakeMode {
+    NONE,
+    TOP_BASKET_TOP,
+    TOP_BASKET_MIDDLE,
+    TOP_BASKET_BOTTOM,
+    BUTTOM_BASKET_MIDDLE,
+    BUTTOM_BASKET_TOP
+};
+
+IntakeMode selectedIntakeMode = IntakeMode::NONE;
+
 void MegaIntakeTask(void*) {
     while (true) {
 
@@ -269,6 +280,54 @@ void BottomBasket2TopBasket() {
     }
 }
 
+void partnerIntakeSelector() {
+    if (partnerController.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_A)) {
+        selectedIntakeMode = IntakeMode::TOP_BASKET_TOP;
+    }
+    else if (partnerController.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_B)) {
+        selectedIntakeMode = IntakeMode::TOP_BASKET_MIDDLE;
+    }
+    else if (partnerController.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_Y)) {
+        selectedIntakeMode = IntakeMode::TOP_BASKET_BOTTOM;
+    }
+    else if (partnerController.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_X)) {
+        selectedIntakeMode = IntakeMode::BUTTOM_BASKET_MIDDLE;
+    }
+    else if (partnerController.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_X)) {
+        selectedIntakeMode = IntakeMode::BUTTOM_BASKET_TOP;
+    }
+    pros::delay(10);
+}
+
+
+void runSelectedIntake() {
+    switch (selectedIntakeMode) {
+        case IntakeMode::TOP_BASKET_TOP:
+            topBasketScoreTop();
+            break;
+
+        case IntakeMode::TOP_BASKET_MIDDLE:
+            topBasketScoreMiddle();
+            break;
+
+        case IntakeMode::TOP_BASKET_BOTTOM:
+            topBasketScoreBottom();
+            break;
+
+        case IntakeMode::BUTTOM_BASKET_MIDDLE:
+            topBasketScoreBottom();
+            break;
+
+        case IntakeMode::BUTTOM_BASKET_TOP:
+            topBasketScoreBottom();
+            break;
+
+        default:
+            break;
+    }
+}
+
+
 void default_profile_init() {
     const char* colorText = (autonColor == -1) ? "RED" : "BLUE";
     //masterController.set_text(0, 1, std::string("Auton: ") + colorText);
@@ -288,7 +347,7 @@ void default_profile_loop() {
     drive.drive(cubic(strafe), cubic(straight), cubic(turn));
     //drive.drive(strafe, straight, turn);
 
-    if (masterController.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_X)) {
+    if (masterController.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2)) {
         toggleMegaIntake = !toggleMegaIntake;
 
         if (toggleMegaIntake) {
@@ -303,7 +362,14 @@ void default_profile_loop() {
             toggleBottomBasket2TopBasket = false;
         }
     }
-    
+
+    partnerIntakeSelector();
+
+    if (masterController.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_LEFT)) {
+        runSelectedIntake();
+    }
+
+    /**
     if (masterController.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1)) {
         topBasketScoreTop(); 
     }
@@ -329,13 +395,14 @@ void default_profile_loop() {
     if (masterController.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_LEFT)) {
         BottomBasket2TopBasket(); 
     }
+    */
     //
-    if (masterController.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_Y)) {
+    if (masterController.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1)) {
         stopperPneumatics.toggle(); 
     }
 
-    if (masterController.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_B)) {
-         scrappePneumatics.toggle();
+    if (masterController.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1)) {
+        scrappePneumatics.toggle();
     }
     
     pros::delay(10);

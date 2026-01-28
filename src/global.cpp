@@ -46,7 +46,7 @@ std::vector<AutonOption> auton_list = {};
 /** Define Controllers  */
 // Defined VEX PROS Main Master Controller
 pros::Controller masterController(pros::E_CONTROLLER_MASTER);
-pros::Controller slaveController(pros::E_CONTROLLER_PARTNER);
+pros::Controller partnerController(pros::E_CONTROLLER_PARTNER);
 
 /** Define Motors  */
 pros::Motor FUCKTEST(22, pros::MotorGearset::blue);
