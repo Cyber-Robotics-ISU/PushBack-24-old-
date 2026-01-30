@@ -48,6 +48,8 @@ void initialize() {
     drive.setStrafePID(4.0, 0.0, 2.0);  // Strafing
     drive.setTurnPID(5, 1.15, 0.5);    // Turning // max speed 100/127
     vertical_encoder.set_reversed(true);
+
+    startMegaIntakeTask();
 }
 
 
@@ -128,7 +130,7 @@ void opcontrol() {
 
 	int last_profile_selection = current_profile_selection;
     profile_list[current_profile_selection].init();
-
+    resetAllFlags();
 	while (true) {
          if (current_profile_selection != last_profile_selection) {
             profile_list[current_profile_selection].init();

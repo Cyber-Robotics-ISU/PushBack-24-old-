@@ -50,7 +50,8 @@ extern pros::Motor FUCKTEST;
 extern pros::Motor FUCKTEST2;
 
 
-extern pros::Motor intakeMotorA;
+//extern pros::Motor intakeMotorA;
+extern pros::MotorGroup intakeMotorA;
 extern pros::Motor intakeMotorB;
 extern pros::Motor intakeMotorC;
 extern pros::Motor intakeMotorD;
@@ -79,6 +80,7 @@ extern std::vector<pros::Motor*> motorGroupBackRight;
 extern pros::Imu imu;
 extern pros::Optical colorCheck;
 extern pros::Optical colorCheck2;
+extern pros::Optical colorCheck3;
 extern pros::Rotation horizontal_encoder;
 extern pros::Rotation vertical_encoder;
 

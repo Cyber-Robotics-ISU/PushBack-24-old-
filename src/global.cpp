@@ -4,8 +4,10 @@
 /** Define Variables  */
 int current_profile_selection = 0; // Currently selected profile index
 std::vector<ProfileOption> profile_list = {
+    {"Simon", simon_profile_init, simon_profile_loop, "Basic default driving profile"},
     {"Default", default_profile_init, default_profile_loop, "Basic default driving profile"},
-    {"Calvin", calvin_profile_init, calvin_profile_loop, "precision driver profile"},
+    {"Calvin", calvin_profile_init, calvin_profile_loop, "calvin driver profile"},
+    {"Hman", hman_profile_init, hman_profile_loop, "pres driver profile"},
     {"IDK", unknown_profile_init, unknown_profile_loop, "Experimental profile"}
 };
 
@@ -16,6 +18,14 @@ int current_auton_selection = 0;
 
 // ALL autons stored here
 std::vector<AutonOption> auton_master_list = {
+    { "Red Side",
+        "loads and color shorts",
+        red_auton,
+      0 }, // red
+     { "Blue Side",
+        "loads and color shorts",
+        red_auton,
+      1 }, // blue
     { "EXAMPLE",
       "1234567890123456789\n1234567890123456789\n1234567890123456789\n1234567890123456789\n1234567890123456789",
       auton_left,
@@ -52,11 +62,12 @@ pros::Controller partnerController(pros::E_CONTROLLER_PARTNER);
 pros::Motor FUCKTEST(22, pros::MotorGearset::blue);
 pros::Motor FUCKTEST2(22, pros::MotorGearset::blue);
 
-pros::Motor intakeMotorA(-2, pros::MotorGearset::green);
-pros::Motor intakeMotorB(3, pros::MotorGearset::blue);
-pros::Motor intakeMotorC(9, pros::MotorGearset::blue);
-pros::Motor intakeMotorD(-8, pros::MotorGearset::green);
-pros::Motor intakeMotorE(7, pros::MotorGearset::green);
+pros::MotorGroup intakeMotorA({-2, 10}, pros::MotorGearset::blue);
+//pros::Motor intakeMotorA(-2, pros::MotorGearset::green);
+pros::Motor intakeMotorB(3, pros::MotorGearset::green);
+pros::Motor intakeMotorC(8, pros::MotorGearset::blue);
+pros::Motor intakeMotorD(-9, pros::MotorGearset::blue);
+pros::Motor intakeMotorE(6, pros::MotorGearset::green);
 
 // Front-left motors
 // NOTE: If motors in a pair fight each other, flip the sign on one motor.
@@ -82,9 +93,10 @@ std::vector<pros::Motor*> motorGroupBackRight = { &back_right1, &back_right2 };
 
 
 /** Define Sensors  */
-pros::Imu imu(21); 
-pros::Optical colorCheck(10);
-pros::Optical colorCheck2(1);
+pros::Imu imu(18); 
+pros::Optical colorCheck(7);
+pros::Optical colorCheck2(5);
+pros::Optical colorCheck3(1);
 pros::Rotation horizontal_encoder(16); // horizontal tracking wheel Rotation sensor
 pros::Rotation vertical_encoder(15); // vertical tracking wheel Rotation sensor
 

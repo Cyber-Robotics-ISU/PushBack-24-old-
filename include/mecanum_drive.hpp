@@ -283,6 +283,41 @@ public:
         setMotorPower(motorsBR, br);
     }
 
+    // ---------------- Tank + Dual-X Strafe Driving ----------------
+    void tank(double leftX, double rightX,
+            double leftY, double rightY,
+            double maxPower = 127) {
+
+        // Strafe comes from BOTH X axes
+        double strafe = -(leftX + rightX) / 2.0;
+
+        // Mecanum mixing (tank-style)
+        double fl = leftY  + strafe;
+        double bl = leftY  - strafe;
+        double fr = rightY - strafe;
+        double br = rightY + strafe;
+
+        // Normalize
+        double maxMag = std::max({
+            std::fabs(fl), std::fabs(fr),
+            std::fabs(bl), std::fabs(br)
+        });
+
+        if (maxMag > maxPower) {
+            fl = fl / maxMag * maxPower;
+            bl = bl / maxMag * maxPower;
+            fr = fr / maxMag * maxPower;
+            br = br / maxMag * maxPower;
+        }
+
+        setMotorPower(motorsFL, fl);
+        setMotorPower(motorsBL, bl);
+        setMotorPower(motorsFR, fr);
+        setMotorPower(motorsBR, br);
+    }
+
+
+
     void stop() {
         setMotorPower(motorsFL, 0);
         setMotorPower(motorsFR, 0);

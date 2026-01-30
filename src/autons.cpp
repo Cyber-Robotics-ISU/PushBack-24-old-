@@ -20,3 +20,15 @@ void auton_right() {
 void auton_skills() {
     FUCKTEST.move(80);
 }
+
+void red_auton() {
+    toggleMegaIntake = true;
+    drive.moveStraight(-25.0);
+    topBasketScoreTop();
+    pros::delay(1000);
+
+    drive.turnPIDAngle(-90.0);
+    drive.moveStraight(25.0);
+
+    resetAllFlags();
+}

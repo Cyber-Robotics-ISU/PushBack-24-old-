@@ -151,6 +151,15 @@ void create_pid_screen() {
 // ============================================================================
 
 void updateAutonList() {
+    if (auton_master_list.empty()) return;
+
+    // 🟢 STEP A: Force color to match FIRST auton in master list
+    int first_side = auton_master_list[0].side;
+
+    if (first_side == 0) autonColor = -1;      // Red
+    else if (first_side == 1) autonColor = 1;  // Blue
+    // if side == 2 (both), keep existing color
+
     std::string last_selected_name = "";
     if (!auton_list.empty() && current_auton_selection >= 0 && current_auton_selection < auton_list.size()) {
         last_selected_name = auton_list[current_auton_selection].name;
@@ -158,24 +167,29 @@ void updateAutonList() {
 
     auton_list.clear();
 
+    // 🟢 STEP B: Build filtered list
     for (auto &a : auton_master_list) {
         if (a.side == 2) {
-            auton_list.push_back(a); 
+            auton_list.push_back(a);
         } else if (a.side == 1 && autonColor == 1) {
-            auton_list.push_back(a); 
+            auton_list.push_back(a);
         } else if (a.side == 0 && autonColor == -1) {
-            auton_list.push_back(a); 
+            auton_list.push_back(a);
         }
     }
 
-    current_auton_selection = 0; 
+    // 🟢 STEP C: Default selection = FIRST auton from master list
+    current_auton_selection = 0;
+
     for (size_t i = 0; i < auton_list.size(); i++) {
-        if (last_selected_name == auton_list[i].name) {
+        if (auton_list[i].name == auton_master_list[0].name) {
             current_auton_selection = i;
-            break; 
+            break;
         }
     }
 }
+
+
 
 // ============================================================================
 //                            GENERAL UI HELPERS
@@ -209,7 +223,7 @@ void create_main_screen() {
 
     lv_obj_set_style_bg_color(screen, lv_color_hex(0x222244), LV_PART_MAIN);
     lv_obj_set_style_bg_opa(screen, LV_OPA_COVER, LV_PART_MAIN);
-
+    updateAutonList();
     // Generate Auton Button Text
     std::string autonInfo = "Auton Select\n";
     if (auton_list.empty()) {
