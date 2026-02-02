@@ -14,4 +14,6 @@ void auton_left();
 void auton_right();
 void auton_skills();
 
+void test_turn_auton();
+void red_auton_right();
 void red_auton();

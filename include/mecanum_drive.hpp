@@ -126,6 +126,23 @@ public:
         kD = turnPID.kD;
     }
 
+    // ---------------- Drive Tuning ----------------
+    void setStrafeScale(double scale) { strafeScale = scale; }
+
+    void setWheelScale(double fl, double fr, double bl, double br) {
+        scaleFL = fl;
+        scaleFR = fr;
+        scaleBL = bl;
+        scaleBR = br;
+    }
+
+    void setSideScale(double left, double right) {
+        scaleFL = left;
+        scaleBL = left;
+        scaleFR = right;
+        scaleBR = right;
+    }
+
 
     // ---------------- Drive Utilities ----------------
     void setFieldOriented(bool enabled) { fieldOriented = enabled; }
@@ -164,7 +181,11 @@ public:
     }
 
     // ---------------- PID Movement ----------------
-    void moveStraight(double targetInches, double maxPower = 127) {
+    bool moveStraight(double targetInches,
+                      double maxPower = 127,
+                      uint32_t timeoutMs = 9000,
+                      uint32_t settleMs = 350,
+                      double settleError = 0.5) {
         drivePID.reset();
         setPose(0, 0, imu ? imu->get_heading() : 0);
         double startVertDeg = vertEnc ? rotationToDegrees(vertEnc->get_position()) : 0.0;   
@@ -178,14 +199,17 @@ public:
                 : pose.x;
             double error = targetInches - traveledIn;
 
-            if (std::fabs(error) < 0.5) {
+            if (std::fabs(error) < settleError) {
                 if (settledTime == 0) settledTime = pros::millis();
-                if (pros::millis() - settledTime >= 350) break;
+                if (pros::millis() - settledTime >= settleMs) {
+                    stop();
+                    return true;
+                }
             } else {
                 settledTime = 0;
             }
 
-            if (pros::millis() - startTime >= 9000) break;
+            if (pros::millis() - startTime >= timeoutMs) break;
 
             double power = drivePID.calculate(targetInches, traveledIn, maxPower);
             // Forward/back is vy in this drive() mapping.
@@ -194,9 +218,14 @@ public:
             pros::delay(10);
         }
         stop();
+        return false;
     }
 
-    void strafePIDMove(double targetInches, double maxPower = 127) {
+    bool strafePIDMove(double targetInches,
+                       double maxPower = 127,
+                       uint32_t timeoutMs = 3000,
+                       uint32_t settleMs = 350,
+                       double settleError = 0.5) {
         strafePID.reset();
         setPose(0, 0, imu ? imu->get_heading() : 0);
         uint32_t startTime = pros::millis();
@@ -206,14 +235,17 @@ public:
             updateOdometry();
             double error = targetInches - pose.y;
 
-            if (std::fabs(error) < 0.5) {
+            if (std::fabs(error) < settleError) {
                 if (settledTime == 0) settledTime = pros::millis();
-                if (pros::millis() - settledTime >= 350) break;
+                if (pros::millis() - settledTime >= settleMs) {
+                    stop();
+                    return true;
+                }
             } else {
                 settledTime = 0;
             }
 
-            if (pros::millis() - startTime >= 3000) break;
+            if (pros::millis() - startTime >= timeoutMs) break;
 
             double power = strafePID.calculate(targetInches, pose.y, maxPower);
             // Strafe left/right is vx in this drive() mapping.
@@ -221,34 +253,88 @@ public:
             pros::delay(10);
         }
         stop();
+        return false;
     }
 
-    void turnPIDAngle(double targetDegrees, double maxPower = 127) {
-        if (!imu) return;
+    bool turnPIDAngle(double targetDegrees, double maxPower = 127, uint32_t timeoutMs = 9000) {
+        if (!imu || imu->is_calibrating()) return false;
         turnPID.reset();
 
-        double target = imu->get_heading() + targetDegrees;
+        double target = imu->get_rotation() + targetDegrees;
         uint32_t startTime = pros::millis();
         uint32_t settledTime = 0;
 
         while (true) {
-            double current = imu->get_heading();
-            double error = std::remainder(target - current, 360.0);
+            double current = imu->get_rotation();
+            double error = target - current;
 
             if (std::fabs(error) < 1.0) {
                 if (settledTime == 0) settledTime = pros::millis();
-                if (pros::millis() - settledTime >= 350) break;
+                if (pros::millis() - settledTime >= 350) {
+                    stop();
+                    return true;
+                }
             } else {
                 settledTime = 0;
             }
 
-            if (pros::millis() - startTime >= 9000) break;
+            if (pros::millis() - startTime >= timeoutMs) break;
 
             double power = turnPID.calculate(0, -error, maxPower);
             drive(0, 0, power, maxPower);
             pros::delay(10);
         }
         stop();
+        return false;
+    }
+
+    // Turn to an absolute IMU heading (0-360). Example: turnToHeading(90).
+    bool turnToHeading(double targetHeadingDeg,
+                       double maxPower = 127,
+                       uint32_t timeoutMs = 3000,
+                       uint32_t settleMs = 350,
+                       double settleErrorDeg = 1.0) {
+        if (!imu || imu->is_calibrating()) return false;
+        turnPID.reset();
+
+        auto wrap360 = [](double deg) {
+            double r = std::fmod(deg, 360.0);
+            if (r < 0) r += 360.0;
+            return r;
+        };
+        auto angleError = [](double target, double current) {
+            double err = target - current;
+            while (err > 180.0) err -= 360.0;
+            while (err < -180.0) err += 360.0;
+            return err;
+        };
+
+        const double target = wrap360(targetHeadingDeg);
+        uint32_t startTime = pros::millis();
+        uint32_t settledTime = 0;
+
+        while (true) {
+            double current = wrap360(imu->get_heading());
+            double error = angleError(target, current);
+
+            if (std::fabs(error) < settleErrorDeg) {
+                if (settledTime == 0) settledTime = pros::millis();
+                if (pros::millis() - settledTime >= settleMs) {
+                    stop();
+                    return true;
+                }
+            } else {
+                settledTime = 0;
+            }
+
+            if (pros::millis() - startTime >= timeoutMs) break;
+
+            double power = turnPID.calculate(0, -error, maxPower);
+            drive(0, 0, power, maxPower);
+            pros::delay(10);
+        }
+        stop();
+        return false;
     }
 
     // ---------------- Driving ----------------
@@ -263,10 +349,17 @@ public:
             vx = x; vy = y;
         }
 
+        vx *= strafeScale;
+
         double fl = vy + vx + omega;
         double fr = vy - vx - omega;
         double bl = vy - vx + omega;
         double br = vy + vx - omega;
+
+        fl *= scaleFL;
+        fr *= scaleFR;
+        bl *= scaleBL;
+        br *= scaleBR;
 
         double maxMag = std::max({std::fabs(fl), std::fabs(fr),
                                   std::fabs(bl), std::fabs(br)});
@@ -332,6 +425,10 @@ public:
         prevVertDeg = prevHorizDeg = 0;
     }
 
+    void resetOdometry(double x = 0, double y = 0, double headingDeg = 0) {
+        setPose(x, y, headingDeg);
+    }
+
     const Pose& getPose() const { return pose; }
 
 private:
@@ -349,6 +446,12 @@ private:
     double TRACK_WIDTH_IN;
     double TRACK_BASE_IN;
     double GEAR_RATIO;
+
+    double strafeScale = 1.00;
+    double scaleFL = 1.0;
+    double scaleFR = 1.0;
+    double scaleBL = 1.0;
+    double scaleBR = 1.0;
 
     PID drivePID{5.0, 0.0, 2.0};
     PID strafePID{4.0, 0.0, 2.0};

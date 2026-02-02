@@ -4,6 +4,8 @@
 /** Define Variables  */
 int current_profile_selection = 0; // Currently selected profile index
 std::vector<ProfileOption> profile_list = {
+    {"jack Comp", jack_comp_profile_init, jack_comp_profile_loop, "Competition hold + shift profile"},
+    {"Simon Comp", simon_comp_profile_init, simon_comp_profile_loop, "Competition hold + shift profile"},
     {"Simon", simon_profile_init, simon_profile_loop, "Basic default driving profile"},
     {"Default", default_profile_init, default_profile_loop, "Basic default driving profile"},
     {"Calvin", calvin_profile_init, calvin_profile_loop, "calvin driver profile"},
@@ -20,30 +22,30 @@ int current_auton_selection = 0;
 std::vector<AutonOption> auton_master_list = {
     { "Red Side",
         "loads and color shorts",
-        red_auton,
+        test_turn_auton,
       0 }, // red
      { "Blue Side",
         "loads and color shorts",
-        red_auton,
+        test_turn_auton,
       1 }, // blue
     { "EXAMPLE",
       "1234567890123456789\n1234567890123456789\n1234567890123456789\n1234567890123456789\n1234567890123456789",
-      auton_left,
+      test_turn_auton,
       2 }, // blue
 
     { "RED",
       "Rush the middle mogo. Scores 2 rings.\nFast and consistent.",
-      auton_right,
+      test_turn_auton,
       0 }, // red
 
     { "BLUE",
       "Blue version of Mogo Rush.\nScores 2 rings.",
-      auton_left,
+      test_turn_auton,
       1 }, // blue
 
     { "Skills Auton",
       "Runs full skills path.\nWorks on red or blue.",
-      auton_left,
+      test_turn_auton,
       2 }, // both
 };
 
@@ -93,10 +95,11 @@ std::vector<pros::Motor*> motorGroupBackRight = { &back_right1, &back_right2 };
 
 
 /** Define Sensors  */
-pros::Imu imu(18); 
+pros::Imu imu(21); 
+pros::Optical colorCheck0(1);
 pros::Optical colorCheck(7);
 pros::Optical colorCheck2(5);
-pros::Optical colorCheck3(1);
+pros::Optical colorCheck3(40);
 pros::Rotation horizontal_encoder(16); // horizontal tracking wheel Rotation sensor
 pros::Rotation vertical_encoder(15); // vertical tracking wheel Rotation sensor
 
@@ -113,4 +116,3 @@ MecanumDrive drive(
     12.5, // Track Base
     1   // Gear Ratio (1.0 for direct drive blue cart)
 );
-

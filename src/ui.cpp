@@ -153,13 +153,6 @@ void create_pid_screen() {
 void updateAutonList() {
     if (auton_master_list.empty()) return;
 
-    // 🟢 STEP A: Force color to match FIRST auton in master list
-    int first_side = auton_master_list[0].side;
-
-    if (first_side == 0) autonColor = -1;      // Red
-    else if (first_side == 1) autonColor = 1;  // Blue
-    // if side == 2 (both), keep existing color
-
     std::string last_selected_name = "";
     if (!auton_list.empty() && current_auton_selection >= 0 && current_auton_selection < auton_list.size()) {
         last_selected_name = auton_list[current_auton_selection].name;
@@ -178,13 +171,14 @@ void updateAutonList() {
         }
     }
 
-    // 🟢 STEP C: Default selection = FIRST auton from master list
+    // 🟢 STEP C: Preserve last selection if possible; otherwise default to 0
     current_auton_selection = 0;
-
-    for (size_t i = 0; i < auton_list.size(); i++) {
-        if (auton_list[i].name == auton_master_list[0].name) {
-            current_auton_selection = i;
-            break;
+    if (!last_selected_name.empty()) {
+        for (size_t i = 0; i < auton_list.size(); i++) {
+            if (auton_list[i].name == last_selected_name) {
+                current_auton_selection = i;
+                break;
+            }
         }
     }
 }
@@ -316,11 +310,22 @@ void create_auton_screen() {
 
     // Data Labels
     lv_obj_t* name_label = lv_label_create(screen);
-    lv_label_set_text(name_label, auton_list[current_auton_selection].name);
+    if (auton_list.empty()) {
+        lv_label_set_text(name_label, "No autons for this side");
+    } else {
+        if (current_auton_selection < 0 || current_auton_selection >= (int)auton_list.size()) {
+            current_auton_selection = 0;
+        }
+        lv_label_set_text(name_label, auton_list[current_auton_selection].name);
+    }
     lv_obj_align(name_label, LV_ALIGN_CENTER, 0, -50);
 
     lv_obj_t* desc_label = lv_label_create(screen);
-    lv_label_set_text(desc_label, auton_list[current_auton_selection].description);
+    if (auton_list.empty()) {
+        lv_label_set_text(desc_label, "Select another side or add autons.");
+    } else {
+        lv_label_set_text(desc_label, auton_list[current_auton_selection].description);
+    }
     lv_label_set_long_mode(desc_label, LV_LABEL_LONG_WRAP);
     lv_obj_set_width(desc_label, 200); 
     lv_obj_set_style_text_align(desc_label, LV_TEXT_ALIGN_CENTER, 0);
@@ -358,6 +363,7 @@ void create_auton_screen() {
     
     lv_obj_add_event_cb(left, [](lv_event_t* e) {
          lv_obj_t** labels = (lv_obj_t**)lv_event_get_user_data(e);
+         if (auton_list.empty()) return;
          current_auton_selection--;
          if (current_auton_selection < 0) current_auton_selection = auton_list.size() - 1;
          lv_label_set_text(labels[0], auton_list[current_auton_selection].name);
@@ -374,6 +380,7 @@ void create_auton_screen() {
 
     lv_obj_add_event_cb(right, [](lv_event_t* e) {
          lv_obj_t** labels = (lv_obj_t**)lv_event_get_user_data(e);
+         if (auton_list.empty()) return;
          current_auton_selection++;
          if (current_auton_selection >= (int)auton_list.size()) current_auton_selection = 0;
          lv_label_set_text(labels[0], auton_list[current_auton_selection].name);

@@ -78,6 +78,7 @@ extern std::vector<pros::Motor*> motorGroupBackRight;
 
 /** Define Sensors */
 extern pros::Imu imu;
+extern pros::Optical colorCheck0;
 extern pros::Optical colorCheck;
 extern pros::Optical colorCheck2;
 extern pros::Optical colorCheck3;

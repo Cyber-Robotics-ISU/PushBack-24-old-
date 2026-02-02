@@ -28,7 +28,7 @@ void initialize() {
 
     imu.reset();
     vertical_encoder.reset();
-    vertical_encoder.reset();
+    horizontal_encoder.reset();
     drive.drive_imu_calibrate();
 
     drive.setFieldOriented(false);
@@ -43,12 +43,15 @@ void initialize() {
     front_left2.set_reversed(true);
     back_left1.set_reversed(true);
     back_left2.set_reversed(true);
-    
-    drive.setDrivePID(6.25, 0.55, 0.14);   // Forward/backward max speed 125/127
-    drive.setStrafePID(4.0, 0.0, 2.0);  // Strafing
-    drive.setTurnPID(5, 1.15, 0.5);    // Turning // max speed 100/127
-    vertical_encoder.set_reversed(true);
 
+    // Tuning knobs for strafing balance (adjust if left/right feel uneven).
+    drive.setStrafeScale(0.85);
+    drive.setSideScale(0.90, 1.00);
+
+    drive.setDrivePID(6.3, 0.55, 0.14);   // Forward/backward max speed 125/127
+    drive.setStrafePID(13, 8.75, 9.75);  // Strafing
+    drive.setTurnPID(6.75, 0.01, .400);    // Turning // max speed 100/127 // wass 3.23, 0, 0 //40550
+    vertical_encoder.set_reversed(true);
     startMegaIntakeTask();
 }
 
